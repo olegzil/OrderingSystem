@@ -1,4 +1,16 @@
 <resources>
     <string name="app_name">CSS</string>
     <string name="action_settings">Settings</string>
+    <string name="hello_blank_fragment">blank fragment</string>
+    <string name="column_shelf">Shelf</string>
+    <string name="column_count">Items</string>
+    <string name="column_average">Average</string>
+    <string name="column_spolaige">Spoilage</string>
+    <string name="shelf_hot">Hot</string>
+    <string name="shelf_cold">Cold</string>
+    <string name="shelf_frozen">Frozen</string>
+    <string name="shelf_overflow">Overflow</string>
+    <string name="hot_text_item_count">0</string>
+    <string name="shelf_average_time">0</string>
+    <string name="shelf_visual_indicator">Food spoilage indicator</string>
 </resources>

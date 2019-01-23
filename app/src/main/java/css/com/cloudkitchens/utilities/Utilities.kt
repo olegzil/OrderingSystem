@@ -3,7 +3,7 @@ package css.com.cloudkitchens.utilities
 import android.util.Log
 import css.com.cloudkitchens.BuildConfig
 
-const val TAG="Smithsonian"
+const val TAG="CloudKitchens"
 class ImmutableList<T>(private val inner: List<T>) : List<T> by inner
 
 fun <T> List<T>.toImmutableList(): List<T> {
