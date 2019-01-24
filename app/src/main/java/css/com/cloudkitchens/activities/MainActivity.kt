@@ -9,6 +9,7 @@ import android.os.IBinder
 import android.support.v7.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
+import css.com.cloudkitchens.constants.Constants
 import css.com.cloudkitchens.dataproviders.KitchenOrder
 import css.com.cloudkitchens.services.FoodOrderService
 import css.com.cloudkitchens.utilities.printLog
@@ -31,7 +32,65 @@ class MainActivity : AppCompatActivity(), ServiceConnection {
         val service = Intent(applicationContext, FoodOrderService::class.java)
         applicationContext.startService(service)
     }
-    fun debugTest(){
+    fun updateOverflow(){
+        var overflowCount=0
+        if (overflowCount < Constants.MAX_OVERFLOW_SHELF_CAPACITY){
+            overflowCount = count_overflow.text.toString().toInt()
+            overflowCount++
+            count_overflow.text = overflowCount.toString()
+        }
+
+    }
+    fun monitorOverflow(){
+        kitchenService?.let {service ->
+            service.getOrderNotificationChannel()?.let {orderNotifier->
+                disposables.add(orderNotifier.subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribeWith(object : DisposableObserver<KitchenOrder>(){
+                        override fun onComplete() {}
+                        override fun onNext(order: KitchenOrder) {
+                            var overflowCount = 0
+                            when(order.temp){
+                                "hot" ->    {
+                                    var count = count_hot.text.toString().toInt()
+                                    if (count >= Constants.MAX_HOT_SHELF_CAPACITY) {
+                                        count--
+                                        count_hot.text = count.toString()
+                                        updateOverflow()
+                                    }
+                                }
+                                "cold" ->   {
+                                    var count = count_cold.text.toString().toInt()
+                                    if (count >= Constants.MAX_COLD_SHELF_CAPCITY) {
+                                        count_cold.text = count.toString()
+                                        count--
+                                        count_cold.text = count.toString()
+                                        updateOverflow()
+                                    }
+                                }
+                                "frozen" -> {
+                                    var count = count_cold.text.toString().toInt()
+                                    if (count >= Constants.MAX_FROZEN_SHELF_CAPCITY) {
+                                        count_cold.text = count.toString()
+                                        count--
+                                        count_cold.text = count.toString()
+                                        updateOverflow()
+                                    }
+                                    count_frozen.text = count.toString()
+                                }
+                                else-> printLog("unknown temperature: ${order.temp}")
+                            }
+                        }
+
+                        override fun onError(e: Throwable) {
+                            printLog(e.toString())
+                        }
+                    }))
+            }
+        }
+    }
+
+    fun updateOrderCount(){
         kitchenService?.let {service ->
             service.getOrderNotificationChannel()?.let {orderNotifier->
                 disposables.add(orderNotifier.subscribeOn(Schedulers.io())
@@ -58,7 +117,6 @@ class MainActivity : AppCompatActivity(), ServiceConnection {
 
                         override fun onError(e: Throwable) {
                             printLog(e.toString())
-                            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
                         }
                     }))
             }
@@ -75,7 +133,9 @@ class MainActivity : AppCompatActivity(), ServiceConnection {
     override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
         val serviceBinder = service as FoodOrderService.OrderSourceBinder
         kitchenService = serviceBinder.getService()
-        debugTest()
+        updateOrderCount()
+        monitorOverflow()
+        updateOverflow()
     }
 
     /**
@@ -85,7 +145,7 @@ class MainActivity : AppCompatActivity(), ServiceConnection {
         super.onResume()
         val intent = Intent(this, FoodOrderService::class.java)
         bindService(intent, this, Context.BIND_AUTO_CREATE)
-        debugTest()
+        updateOrderCount()
     }
 
     /**

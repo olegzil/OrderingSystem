@@ -26,14 +26,15 @@ class FoodOrderService : Service(), KitchenOrderNotification {
     private var orderNotification: PublishSubject<KitchenOrder>? = null
     private var continueRunning = true
     private var request:Job? = null
+    private var orderThread: OrderThread
     init {
         if (kitchenOrders == null)
             kitchenOrders = readKitchenOrders("orders.json")
         if (orderNotification == null)
             orderNotification = PublishSubject.create()
-        OrderThread{
+        orderThread = OrderThread{
             orderGenerator()
-        }.start()
+        }
     }
     internal class OrderThread( private var predicate:()->Unit) : Thread() {
         override fun run(){
@@ -96,9 +97,8 @@ class FoodOrderService : Service(), KitchenOrderNotification {
     override fun onRebind(intent: Intent?) {
         continueRunning = true
         printLog("from Service.onBind")
-        OrderThread{
-            orderGenerator()
-        }.start()
+        if (!orderThread.isAlive)
+            orderThread.start()
         super.onRebind(intent)
     }
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -116,9 +116,8 @@ class FoodOrderService : Service(), KitchenOrderNotification {
         continueRunning = true
         printLog("from Service.onBind")
         kitchenOrders = readKitchenOrders("orders.json")
-        OrderThread{
-            orderGenerator()
-        }.start()
+        if (!orderThread.isAlive)
+            orderThread.start()
         return binder
     }
     override fun getOrderNotificationChannel() = orderNotification
@@ -136,7 +135,7 @@ class FoodOrderService : Service(), KitchenOrderNotification {
             order?.let {
                 orderNotification?.onNext(it)
             }
-            sleep(3000)
+            sleep(1000)
         }
     }
 }
