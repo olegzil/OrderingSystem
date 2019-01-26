@@ -5,13 +5,15 @@
     <string name="column_shelf">Shelf</string>
     <string name="column_count">Items</string>
     <string name="column_average">Average</string>
-    <string name="column_spolaige">Spoilage</string>
     <string name="shelf_hot">Hot</string>
     <string name="shelf_cold">Cold</string>
     <string name="shelf_frozen">Frozen</string>
     <string name="shelf_overflow">Overflow</string>
+    <string name="order_name">Name</string>
+    <string name="order_temp">Temperature</string>
+    <string name="order_shelf_life">Shelf life</string>
+    <string name="order_decay_rate">Decay rate</string>
+    <string name="order_normalized">Normalized shelf life</string>
     <string name="hot_text_item_count">0</string>
     <string name="shelf_average_time">0</string>
-    <string name="shelf_visual_indicator">Food spoilage indicator</string>
-    <string name="time_before_next_order">"Time next/average: "</string>
 </resources>

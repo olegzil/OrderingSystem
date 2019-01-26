@@ -1,8 +1,10 @@
 package css.com.cloudkitchens.managers
 
 import css.com.cloudkitchens.constants.Constants
+import css.com.cloudkitchens.constants.Constants.MAX_HOT_SHELF_CAPACITY
 import css.com.cloudkitchens.constants.Constants.MAX_OVERFLOW_SHELF_CAPACITY
 import css.com.cloudkitchens.dataproviders.KitchenOrder
+import css.com.cloudkitchens.dataproviders.KitchenOrderMetadata
 import css.com.cloudkitchens.dataproviders.KitchenOrderShelfStatus
 import css.com.cloudkitchens.interfaces.ShelfInterface
 import css.com.cloudkitchens.services.FoodOrderService
@@ -10,7 +12,12 @@ import css.com.cloudkitchens.shelves.ShelfCold
 import css.com.cloudkitchens.shelves.ShelfFrozen
 import css.com.cloudkitchens.shelves.ShelfHot
 import css.com.cloudkitchens.shelves.ShelfOverflow
+import css.com.cloudkitchens.utilities.printLog
 import io.reactivex.Observable
+import io.reactivex.disposables.Disposable
+import io.reactivex.observers.DisposableObserver
+import io.reactivex.schedulers.Schedulers
+import io.reactivex.subjects.PublishSubject
 
 class ShelfManager(private val service: FoodOrderService) {
     private enum class Shelves {
@@ -42,48 +49,151 @@ class ShelfManager(private val service: FoodOrderService) {
             }
         }
     }
+    private fun clearOverFlowShelf(){
 
-    fun getKitchenOrdersStatus(): Observable<KitchenOrderShelfStatus>? {
-        val subscription = service.getOrderNotificationChannel()?.run {
-            doOnNext { order ->
-                when (order.order.temp) {
-                    "hot" -> {
-                        shelves[Shelves.SHELF_HOT]?.let { shelf ->
-                            if (shelf.getOrdersCount() >= Constants.MAX_HOT_SHELF_CAPACITY) {
-                                processExcessOrder({ shelves[Shelves.SHELF_HOT]?.removeOrder() }, Shelves.SHELF_HOT)
-                            } else
-                                shelves[Shelves.SHELF_HOT]?.addOrder(order.order)
-                        }
-                    }
-                    "cold" -> {
-                        shelves[Shelves.SHELF_COLD]?.let { shelf ->
-                            if (shelf.getOrdersCount() >= Constants.MAX_HOT_SHELF_CAPACITY) {
-                                processExcessOrder({ shelves[Shelves.SHELF_COLD]?.removeOrder() }, Shelves.SHELF_COLD)
-                            } else
-                                shelves[Shelves.SHELF_COLD]?.addOrder(order.order)
-                        }
-                    }
-                    "frozen" -> {
-                        shelves[Shelves.SHELF_FROZEN]?.let { shelf ->
-                            if (shelf.getOrdersCount() >= Constants.MAX_FROZEN_SHELF_CAPCITY) {
-                                processExcessOrder(
-                                    { shelves[Shelves.SHELF_FROZEN]?.removeOrder() },
-                                    Shelves.SHELF_FROZEN
-                                )
-                            } else
-                                shelves[Shelves.SHELF_FROZEN]?.addOrder(order.order)
-                        }
-                    }
-                }
-            }
-            .map {
-                val retVal = mutableListOf<Pair<String, Int>>()
-                shelves.forEach { order ->
-                    retVal.add(Pair(order.value.getOrderTemp(), order.value.getOrdersCount()))
-                }
-                KitchenOrderShelfStatus(retVal)
+    }
+    private fun expiredOrderRemoveHelper(orders: List<KitchenOrder>) {
+        shelves[Shelves.SHELF_OVERFLOW]?.run {
+            if (getOrdersCount() == MAX_OVERFLOW_SHELF_CAPACITY)
+                return
+        }
+
+        orders.sortedByDescending {
+            it.timeStamp
+        }
+        orders.forEach { order ->
+            shelves[Shelves.SHELF_OVERFLOW]?.addOrder(order)
+            shelves[Shelves.SHELF_OVERFLOW]?.run {
+                if (getOrdersCount() == MAX_OVERFLOW_SHELF_CAPACITY)
+                    return@forEach
             }
         }
-        return subscription
+    }
+
+    private fun removeExpiredOrders() {
+        val hotOrders = shelves[Shelves.SHELF_HOT]?.removeOrder()
+        val coldOrders = shelves[Shelves.SHELF_COLD]?.removeOrder()
+        val frozenOrders = shelves[Shelves.SHELF_FROZEN]?.removeOrder()
+        shelves[Shelves.SHELF_OVERFLOW]?.removeOrder() //Once removed, overflow orders are considered waste
+
+        //clear overflow shelf
+        clearOverFlowShelf()
+
+        //If there is space on the overflow shelf, move the expired orders there
+        shelves[Shelves.SHELF_OVERFLOW]?.run {
+            if (getOrdersCount() < MAX_OVERFLOW_SHELF_CAPACITY) {
+                hotOrders?.let { expiredOrderRemoveHelper(hotOrders) }          //now move any expired orders to the overflow shelf, if poissble.
+                coldOrders?.let { expiredOrderRemoveHelper(coldOrders) }
+                frozenOrders?.let { expiredOrderRemoveHelper(frozenOrders) }
+            }
+        }
+    }
+    private fun moveOrdersFromOverflow(){
+        val ordersToRemove = mutableListOf<KitchenOrder>()
+        shelves[Shelves.SHELF_OVERFLOW]?.run {
+            val count = getOrdersCount()
+            for (i in count downTo 0){
+                val order = getNewestOrder()
+                order?.run {
+                    when(temp){
+                        "hot" ->{
+                            shelves[Shelves.SHELF_HOT]?.run {
+                                if (getOrdersCount() < MAX_HOT_SHELF_CAPACITY) {
+                                    addOrder(order)
+                                    ordersToRemove.add(order)
+                                }
+                            }
+                        }
+                        "cold" -> {
+                            shelves[Shelves.SHELF_COLD]?.run {
+                                if (getOrdersCount() < MAX_HOT_SHELF_CAPACITY) {
+                                    addOrder(order)
+                                    ordersToRemove.add(order)
+                                }
+                            }
+                        }
+                        "frozen" -> {
+                            shelves[Shelves.SHELF_FROZEN]?.run {
+                                if (getOrdersCount() < MAX_HOT_SHELF_CAPACITY) {
+                                    addOrder(order)
+                                    ordersToRemove.add(order)
+                                }
+                            }
+                        }
+                        else -> {}
+                    }
+                }
+            }
+        }
+        // clean up.
+        shelves[Shelves.SHELF_OVERFLOW]?.run{
+            ordersToRemove.forEach {
+                removeOrder(it.id)
+            }
+        }
+    }
+    fun initiateOrderAging(): Disposable {
+        return service.getOrderHeartbeat()
+            .subscribeOn(Schedulers.io())
+            .subscribeWith(object : DisposableObserver<Long>() {
+                override fun onComplete() {
+                    // Do nothing
+                }
+
+                override fun onNext(delta: Long) {
+                    shelves[Shelves.SHELF_HOT]?.ageOrder(delta)
+                    shelves[Shelves.SHELF_COLD]?.ageOrder(delta)
+                    shelves[Shelves.SHELF_FROZEN]?.ageOrder(delta)
+                    shelves[Shelves.SHELF_OVERFLOW]?.ageOrder(delta)
+                    removeExpiredOrders()
+                    moveOrdersFromOverflow()
+                }
+
+                override fun onError(e: Throwable) {
+                    printLog(e.toString())
+                }
+            })
+    }
+
+    fun getKitchenOrdersStatus(): Observable<KitchenOrderShelfStatus>? {
+        return service.getOrderNotificationChannel()
+            ?.run<PublishSubject<KitchenOrderMetadata>, Observable<KitchenOrderShelfStatus>?> {
+                doOnNext { order ->
+                    when (order.order.temp) {
+                        "hot" -> {
+                            shelves[Shelves.SHELF_HOT]?.let { shelf ->
+                                if (shelf.getOrdersCount() >= Constants.MAX_HOT_SHELF_CAPACITY) {
+                                    processExcessOrder({ shelves[Shelves.SHELF_HOT]?.removeOrder() }, Shelves.SHELF_HOT)
+                                } else {
+                                    shelves[Shelves.SHELF_HOT]?.addOrder(order.order)
+                                }
+                            }
+                        }
+                        "cold" -> {
+                            shelves[Shelves.SHELF_COLD]?.let { shelf ->
+                                if (shelf.getOrdersCount() >= Constants.MAX_HOT_SHELF_CAPACITY) {
+                                    processExcessOrder({ shelves[Shelves.SHELF_COLD]?.removeOrder() },Shelves.SHELF_COLD)
+                                } else
+                                    shelves[Shelves.SHELF_COLD]?.addOrder(order.order)
+                            }
+                        }
+                        "frozen" -> {
+                            shelves[Shelves.SHELF_FROZEN]?.let { shelf ->
+                                if (shelf.getOrdersCount() >= Constants.MAX_FROZEN_SHELF_CAPCITY) {
+                                    processExcessOrder({ shelves[Shelves.SHELF_FROZEN]?.removeOrder() }, Shelves.SHELF_FROZEN)
+                                } else
+                                    shelves[Shelves.SHELF_FROZEN]?.addOrder(order.order)
+                            }
+                        }
+                    }
+                }
+                    .map {
+                        val retVal = mutableListOf<Pair<String, Int>>()
+                        shelves.forEach { order ->
+                            retVal.add(Pair(order.value.getOrderTemp(), order.value.getOrdersCount()))
+                        }
+                        KitchenOrderShelfStatus(retVal)
+                    }
+            }
     }
 }

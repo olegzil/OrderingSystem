@@ -9,7 +9,6 @@ import android.os.IBinder
 import android.support.v7.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
-import css.com.cloudkitchens.dataproviders.KitchenOrderMetadata
 import css.com.cloudkitchens.dataproviders.KitchenOrderShelfStatus
 import css.com.cloudkitchens.managers.ShelfManager
 import css.com.cloudkitchens.services.FoodOrderService
@@ -25,36 +24,13 @@ import kotlinx.android.synthetic.main.fragment_main_view.*
 class MainActivity : AppCompatActivity(), ServiceConnection {
     private val disposables = CompositeDisposable()
     private var kitchenService: FoodOrderService? = null
-    private var shelfManager: ShelfManager?=null
+    private var shelfManager: ShelfManager? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(css.com.cloudkitchens.R.layout.activity_main)
         setSupportActionBar(toolbar)
         val service = Intent(applicationContext, FoodOrderService::class.java)
         applicationContext.startService(service)
-    }
-
-    fun monitorMetaData() {
-        kitchenService?.let { service ->
-            service.getOrderNotificationChannel()?.let { metaData ->
-                metaData.subscribeOn(Schedulers.io())
-                metaData.observeOn(AndroidSchedulers.mainThread())
-                metaData.subscribeWith(object:DisposableObserver<KitchenOrderMetadata>(){
-                    override fun onComplete() {
-                        // Do nothing
-                    }
-
-                    override fun onNext(orderMetaData: KitchenOrderMetadata) {
-                        next_order_arival_time.text =
-                            "%.2f/%.2f".format(orderMetaData.nextArrivalTime, orderMetaData.averageArrivalTime)                    }
-
-                    override fun onError(e: Throwable) {
-                        printLog(e.toString())
-                    }
-
-                })
-            }
-        }
     }
 
     private fun monitorOrderCount() {
@@ -99,9 +75,11 @@ class MainActivity : AppCompatActivity(), ServiceConnection {
     override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
         val serviceBinder = service as FoodOrderService.OrderSourceBinder
         kitchenService = serviceBinder.getService()
-        shelfManager = ShelfManager(serviceBinder.getService())
-        monitorOrderCount()
-//        monitorMetaData()
+        kitchenService?.let { service ->
+            shelfManager = ShelfManager(service)
+            shelfManager?.initiateOrderAging()
+            monitorOrderCount()
+        }
     }
 
     /**
@@ -112,7 +90,6 @@ class MainActivity : AppCompatActivity(), ServiceConnection {
         val intent = Intent(this, FoodOrderService::class.java)
         bindService(intent, this, Context.BIND_AUTO_CREATE)
         monitorOrderCount()
-//        monitorMetaData()
     }
 
     /**

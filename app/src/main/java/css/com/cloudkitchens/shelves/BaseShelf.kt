@@ -6,8 +6,21 @@ import css.com.cloudkitchens.interfaces.ShelfOrderInterface
 
 abstract class BaseShelf : ShelfInterface {
     private class ShelfOrder(private var order: KitchenOrder) : ShelfOrderInterface {
+        private var decayRateMultiplier=1.0
+        var orderAge = 0L
+        override fun getDecayRate() = decayRateMultiplier
+
+        override fun setDecayRateMultiplier(multiplier:Double){
+            decayRateMultiplier = multiplier
+        }
+
+        override fun ageOrderBy(delta: Long) {
+            orderAge = Math.min(order.shelfLife.toLong(), orderAge+delta)
+        }
+
         override fun isExpired(): Boolean {
-            return false
+            val age = (order.shelfLife - orderAge) - (order.decayRate*decayRateMultiplier*orderAge)
+            return Math.max(0.0, age) == 0.0
         }
 
         override fun timeStamp(): Long {
@@ -20,6 +33,13 @@ abstract class BaseShelf : ShelfInterface {
     }
 
     private val orderList = mutableMapOf<String, ShelfOrder>()
+
+    @Synchronized
+    override fun ageOrder(delta: Long) {
+        orderList.forEach{order->
+            order.value.ageOrderBy(delta)
+        }
+    }
 
     override fun getOrdersCount() = orderList.size
     override fun getOldestOrder(): KitchenOrder? {
@@ -36,7 +56,7 @@ abstract class BaseShelf : ShelfInterface {
         return requestedOrder
     }
 
-    override fun getNewstOrder(): KitchenOrder? {
+    override fun getNewestOrder(): KitchenOrder? {
         if (orderList.isEmpty())
             return null
         var prevOrderAge = Long.MAX_VALUE
@@ -50,16 +70,19 @@ abstract class BaseShelf : ShelfInterface {
         return requestedOrder
     }
 
+    @Synchronized
     override fun removeOrder(id: String): KitchenOrder? {
         if (orderList.isEmpty() || !orderList.containsKey(id))
             return null
         return orderList.remove(id)?.getOrder()
     }
 
+    @Synchronized
     override fun addOrder(order: KitchenOrder) {
         orderList[order.id] = ShelfOrder(order)
     }
 
+    @Synchronized
     override fun removeOrder(): List<KitchenOrder> {
         if (orderList.isEmpty())
             return listOf()
@@ -69,6 +92,15 @@ abstract class BaseShelf : ShelfInterface {
                 orders.add(order.value.getOrder())
             }
         }
+        orders.forEach{
+            orderList.remove(it.id)
+        }
         return orders
+    }
+
+    override fun setDecayRateMultiplier(multiplier: Double) {
+        orderList.forEach {
+            it.value.setDecayRateMultiplier(multiplier)
+        }
     }
 }

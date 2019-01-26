@@ -9,50 +9,6 @@
     <!--U.I. busy spinner-->
 
     <!--Recycler view for shelf detail-->
-    <ImageView
-            android:id="@+id/image_spoilage"
-            android:layout_width="45dp"
-            android:layout_height="45dp"
-            android:src="@drawable/ic_launcher_background"
-            android:contentDescription="@string/app_name"
-            app:layout_constraintStart_toStartOf="@+id/title_spoilage"
-            app:layout_constraintEnd_toEndOf="parent" app:layout_constraintStart_toEndOf="@+id/average_hot"
-            app:layout_constraintHorizontal_bias="1.0"
-            app:layout_constraintTop_toBottomOf="@+id/title_spoilage"
-            app:layout_constraintBottom_toTopOf="@+id/image_cold"/>
-    <ImageView
-            android:id="@+id/image_overflow"
-            android:layout_width="45dp"
-            android:layout_height="45dp"
-            android:src="@drawable/ic_launcher_background"
-            android:contentDescription="@string/app_name"
-            app:layout_constraintStart_toStartOf="@+id/image_frozen"
-            app:layout_constraintEnd_toEndOf="parent" app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toEndOf="@+id/average_overflow"
-            app:layout_constraintTop_toBottomOf="@+id/image_frozen"
-            app:layout_constraintBottom_toTopOf="@+id/recycler_view"/>
-    <ImageView
-            android:id="@+id/image_frozen"
-            android:layout_width="45dp"
-            android:layout_height="45dp"
-            android:src="@drawable/ic_launcher_background"
-            android:contentDescription="@string/app_name"
-            app:layout_constraintStart_toStartOf="@+id/image_cold"
-            app:layout_constraintEnd_toEndOf="parent" app:layout_constraintStart_toEndOf="@+id/average_frozen"
-            app:layout_constraintHorizontal_bias="1.0"
-            app:layout_constraintBottom_toTopOf="@+id/image_overflow"
-            app:layout_constraintTop_toBottomOf="@+id/image_cold"/>
-    <ImageView
-            android:id="@+id/image_cold"
-            android:layout_width="45dp"
-            android:layout_height="45dp"
-            android:src="@drawable/ic_launcher_background"
-            android:contentDescription="@string/app_name"
-            app:layout_constraintStart_toStartOf="@+id/image_spoilage"
-            app:layout_constraintEnd_toEndOf="parent" app:layout_constraintStart_toEndOf="@+id/average_cold"
-            app:layout_constraintHorizontal_bias="1.0"
-            app:layout_constraintBottom_toTopOf="@+id/image_frozen"
-            app:layout_constraintTop_toBottomOf="@+id/image_spoilage"/>
     <android.support.v7.widget.RecyclerView
             android:id="@+id/recycler_view"
             android:layout_width="wrap_content"
@@ -68,14 +24,13 @@
             android:elevation="?android:attr/actionBarSize"
             app:layout_constraintBottom_toBottomOf="parent" android:layout_marginStart="8dp"
             app:layout_constraintStart_toStartOf="@+id/guideline9"
-            app:layout_constraintTop_toBottomOf="@+id/image_overflow" app:layout_constraintEnd_toEndOf="parent"/>
+            app:layout_constraintEnd_toEndOf="parent"/>
 
     <EditText
             android:layout_width="88dp"
             android:layout_height="wrap_content"
-            android:inputType="textPersonName"
             android:text="@string/column_shelf"
-            android:ems="10"
+            android:editable="false"
             android:id="@+id/title_shelf"
             android:singleLine="true"
             app:layout_constraintStart_toStartOf="@+id/shelf_hot"
@@ -86,39 +41,26 @@
     <EditText
             android:layout_width="89dp"
             android:layout_height="wrap_content"
-            android:inputType="textPersonName"
             android:text="@string/column_count"
-            android:ems="10"
+            android:editable="false"
             android:id="@+id/title_item"
             android:singleLine="true" android:selectAllOnFocus="false"
             app:layout_constraintTop_toTopOf="@+id/title_shelf"
-            app:layout_constraintBottom_toBottomOf="@+id/title_shelf"
             app:layout_constraintStart_toEndOf="@+id/title_shelf" app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintEnd_toStartOf="@+id/title_average"/>
+            app:layout_constraintEnd_toStartOf="@+id/title_average"
+            app:layout_constraintBottom_toBottomOf="@+id/title_shelf"/>
     <EditText
             android:layout_width="89dp"
             android:layout_height="wrap_content"
-            android:inputType="textPersonName"
             android:text="@string/column_average"
-            android:ems="10"
+            android:editable="false"
             android:id="@+id/title_average"
             android:singleLine="false"
             app:layout_constraintTop_toTopOf="@+id/title_item"
-            app:layout_constraintBottom_toBottomOf="@+id/title_item"
-            app:layout_constraintStart_toEndOf="@+id/title_item" app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintEnd_toStartOf="@+id/title_spoilage"/>
-    <EditText
-            android:layout_width="89dp"
-            android:layout_height="wrap_content"
-            android:inputType="textPersonName"
-            android:text="@string/column_spolaige"
-            android:ems="10"
-            android:id="@+id/title_spoilage"
-            android:singleLine="true"
-            app:layout_constraintTop_toTopOf="@+id/title_average"
-            app:layout_constraintBottom_toBottomOf="@+id/title_average"
-            app:layout_constraintStart_toEndOf="@+id/title_average" app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintEnd_toEndOf="parent"/>
+            app:layout_constraintStart_toEndOf="@+id/title_item"
+            app:layout_constraintStart_toStartOf="@+id/average_hot"
+            app:layout_constraintEnd_toEndOf="@+id/average_hot"
+            app:layout_constraintBottom_toBottomOf="@+id/title_item"/>
     <android.support.constraint.Guideline
             android:orientation="horizontal"
             android:layout_width="wrap_content"
@@ -134,12 +76,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/shelf_hot"
-            app:layout_constraintEnd_toEndOf="@+id/shelf_cold"
-            android:layout_marginTop="8dp" app:layout_constraintTop_toTopOf="@+id/count_hot"
-            app:layout_constraintBottom_toBottomOf="@+id/count_hot"
-            app:layout_constraintVertical_bias="1.0" app:layout_constraintStart_toStartOf="parent"
-            android:layout_marginStart="8dp" app:layout_constraintHorizontal_bias="0.226"
-            app:layout_constraintEnd_toStartOf="@+id/count_hot"/>
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintHorizontal_bias="0.5" app:layout_constraintEnd_toStartOf="@+id/count_hot"
+            app:layout_constraintTop_toTopOf="@+id/count_hot" app:layout_constraintBottom_toBottomOf="@+id/count_hot"/>
     <TextView
             android:text="@string/shelf_cold"
             android:textSize="32sp"
@@ -147,10 +86,9 @@
             android:layout_height="wrap_content"
             android:id="@+id/shelf_cold"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="@+id/shelf_frozen"
-            app:layout_constraintHorizontal_bias="0.272" app:layout_constraintTop_toTopOf="@+id/count_cold"
-            app:layout_constraintBottom_toBottomOf="@+id/count_cold" app:layout_constraintVertical_bias="0.993"
-            android:layout_marginStart="8dp" app:layout_constraintEnd_toStartOf="@+id/count_cold"/>
+            app:layout_constraintHorizontal_bias="0.5" app:layout_constraintEnd_toStartOf="@+id/count_cold"
+            app:layout_constraintTop_toTopOf="@+id/count_cold"
+            app:layout_constraintBottom_toBottomOf="@+id/count_cold"/>
     <TextView
             android:text="@string/shelf_frozen"
             android:textSize="32sp"
@@ -158,20 +96,19 @@
             android:layout_height="wrap_content"
             android:id="@+id/shelf_frozen"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="@+id/shelf_overflow"
-            app:layout_constraintHorizontal_bias="0.224" app:layout_constraintTop_toTopOf="@+id/count_frozen"
-            app:layout_constraintBottom_toBottomOf="@+id/count_frozen" app:layout_constraintVertical_bias="0.993"
-            android:layout_marginStart="8dp" app:layout_constraintEnd_toStartOf="@+id/count_frozen"/>
+            app:layout_constraintHorizontal_bias="0.5" app:layout_constraintEnd_toStartOf="@+id/count_frozen"
+            app:layout_constraintTop_toTopOf="@+id/count_frozen"
+            app:layout_constraintBottom_toBottomOf="@+id/count_frozen"/>
     <TextView
             android:text="@string/shelf_overflow"
             android:textSize="32sp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/shelf_overflow"
-            app:layout_constraintStart_toStartOf="parent" android:layout_marginStart="8dp"
-            app:layout_constraintTop_toTopOf="@+id/count_overflow"
-            app:layout_constraintBottom_toBottomOf="@+id/count_overflow" app:layout_constraintVertical_bias="0.904"
-            app:layout_constraintHorizontal_bias="0.161" app:layout_constraintEnd_toStartOf="@+id/count_overflow"/>
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintHorizontal_bias="0.5" app:layout_constraintEnd_toStartOf="@+id/count_overflow"
+            app:layout_constraintTop_toBottomOf="@+id/shelf_frozen"
+            app:layout_constraintBottom_toTopOf="@+id/recycler_view"/>
     <android.support.constraint.Guideline
             android:orientation="vertical"
             android:layout_width="wrap_content"
@@ -187,105 +124,98 @@
             android:id="@+id/guideline10" app:layout_constraintGuide_percent="0.9384405"/>
     <TextView
             android:text="0"
-            android:textSize="32sp"
+            android:textSize="30sp"
             android:textStyle="bold|italic"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/count_hot" app:layout_constraintStart_toStartOf="@+id/title_item"
-            app:layout_constraintEnd_toEndOf="@+id/title_item" app:layout_constraintTop_toTopOf="@+id/average_hot"
-            app:layout_constraintBottom_toBottomOf="@+id/average_hot"
-            app:layout_constraintStart_toEndOf="@+id/shelf_hot" app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintEnd_toStartOf="@+id/average_hot" app:layout_constraintVertical_bias="0.0"/>
+            android:id="@+id/count_hot"
+            app:layout_constraintStart_toEndOf="@+id/shelf_hot" app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintEnd_toStartOf="@+id/average_hot"
+            app:layout_constraintTop_toTopOf="@+id/average_hot"
+            app:layout_constraintBottom_toBottomOf="@+id/average_hot"/>
     <TextView
             android:text="0"
-            android:textSize="32sp"
+            android:textSize="30sp"
             android:textStyle="bold|italic"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/average_hot"
-            app:layout_constraintStart_toStartOf="@+id/title_average"
-            app:layout_constraintEnd_toEndOf="@+id/title_average" app:layout_constraintTop_toTopOf="@+id/image_spoilage"
-            app:layout_constraintBottom_toBottomOf="@+id/image_spoilage"
-            app:layout_constraintStart_toEndOf="@+id/count_hot" app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintEnd_toStartOf="@+id/image_spoilage"/>
+            app:layout_constraintStart_toEndOf="@+id/count_hot" app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintEnd_toEndOf="@+id/average_cold"
+            app:layout_constraintTop_toBottomOf="@+id/title_average"
+            app:layout_constraintBottom_toTopOf="@+id/average_cold"
+            app:layout_constraintStart_toStartOf="@+id/average_cold"/>
     <TextView
             android:text="0"
-            android:textSize="32sp"
+            android:textSize="30sp"
             android:textStyle="bold|italic"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/average_overflow"
-            app:layout_constraintStart_toStartOf="@+id/average_frozen"
-            app:layout_constraintEnd_toEndOf="@+id/average_frozen"
-            app:layout_constraintTop_toTopOf="@+id/image_overflow"
-            app:layout_constraintBottom_toBottomOf="@+id/image_overflow" app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintStart_toEndOf="@+id/count_overflow"
-            app:layout_constraintEnd_toStartOf="@+id/image_overflow"/>
+            app:layout_constraintStart_toEndOf="@+id/count_overflow" app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/count_overflow"
+            app:layout_constraintBottom_toBottomOf="@+id/count_overflow"/>
     <TextView
             android:text="0"
-            android:textSize="32sp"
+            android:textSize="30sp"
             android:textStyle="bold|italic"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/average_frozen"
-            app:layout_constraintStart_toStartOf="@+id/average_cold"
-            app:layout_constraintEnd_toEndOf="@+id/average_cold" app:layout_constraintTop_toTopOf="@+id/image_frozen"
-            app:layout_constraintBottom_toBottomOf="@+id/image_frozen"
-            app:layout_constraintStart_toEndOf="@+id/count_frozen" app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintEnd_toStartOf="@+id/image_frozen" app:layout_constraintVertical_bias="0.923"/>
+            app:layout_constraintStart_toEndOf="@+id/count_frozen" app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintEnd_toEndOf="@+id/average_overflow"
+            app:layout_constraintTop_toBottomOf="@+id/average_cold"
+            app:layout_constraintBottom_toTopOf="@+id/average_overflow"
+            app:layout_constraintStart_toStartOf="@+id/average_overflow"/>
     <TextView
             android:text="0"
-            android:textSize="32sp"
+            android:textSize="30sp"
             android:textStyle="bold|italic"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/average_cold"
-            app:layout_constraintStart_toStartOf="@+id/average_hot"
-            app:layout_constraintEnd_toEndOf="@+id/average_hot" app:layout_constraintTop_toTopOf="@+id/image_cold"
-            app:layout_constraintBottom_toBottomOf="@+id/image_cold"
-            app:layout_constraintStart_toEndOf="@+id/count_cold" app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintEnd_toStartOf="@+id/image_cold" app:layout_constraintVertical_bias="0.923"/>
+            app:layout_constraintStart_toEndOf="@+id/count_cold" app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintEnd_toEndOf="@+id/average_frozen"
+            app:layout_constraintTop_toBottomOf="@+id/average_hot"
+            app:layout_constraintBottom_toTopOf="@+id/average_frozen"
+            app:layout_constraintStart_toStartOf="@+id/average_frozen"/>
     <TextView
             android:text="0"
-            android:textSize="32sp"
+            android:textSize="30sp"
             android:textStyle="bold|italic"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/count_overflow"
-            app:layout_constraintStart_toStartOf="@+id/count_frozen"
-            app:layout_constraintEnd_toEndOf="@+id/count_frozen"
-            app:layout_constraintTop_toTopOf="@+id/average_overflow"
-            app:layout_constraintBottom_toBottomOf="@+id/average_overflow" app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintVertical_bias="1.0" app:layout_constraintStart_toEndOf="@+id/shelf_overflow"
-            app:layout_constraintEnd_toStartOf="@+id/average_overflow"/>
+            app:layout_constraintStart_toEndOf="@+id/shelf_overflow" app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintEnd_toStartOf="@+id/average_overflow"
+            app:layout_constraintTop_toTopOf="@+id/shelf_overflow"
+            app:layout_constraintBottom_toBottomOf="@+id/shelf_overflow"/>
     <TextView
             android:text="0"
-            android:textSize="32sp"
+            android:textSize="30sp"
             android:textStyle="bold|italic"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/count_frozen"
-            app:layout_constraintStart_toStartOf="@+id/count_cold"
-            app:layout_constraintEnd_toEndOf="@+id/count_cold" app:layout_constraintTop_toTopOf="@+id/average_frozen"
-            app:layout_constraintBottom_toBottomOf="@+id/average_frozen"
-            app:layout_constraintStart_toEndOf="@+id/shelf_frozen" app:layout_constraintHorizontal_bias="0.16"
-            app:layout_constraintEnd_toStartOf="@+id/average_frozen"/>
+            app:layout_constraintStart_toEndOf="@+id/shelf_frozen" app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintEnd_toStartOf="@+id/average_frozen"
+            app:layout_constraintTop_toTopOf="@+id/average_frozen"
+            app:layout_constraintBottom_toBottomOf="@+id/average_frozen"/>
     <TextView
             android:text="0"
-            android:textSize="32sp"
+            android:textSize="30sp"
             android:textStyle="bold|italic"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/count_cold"
-            app:layout_constraintStart_toStartOf="@+id/title_item"
-            app:layout_constraintEnd_toEndOf="@+id/title_item" app:layout_constraintTop_toTopOf="@+id/average_cold"
-            app:layout_constraintBottom_toBottomOf="@+id/average_cold"
-            app:layout_constraintStart_toEndOf="@+id/shelf_cold" app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintEnd_toStartOf="@+id/average_cold" app:layout_constraintVertical_bias="0.666"/>
+            app:layout_constraintStart_toEndOf="@+id/shelf_cold" app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintEnd_toStartOf="@+id/average_cold"
+            app:layout_constraintTop_toTopOf="@+id/average_cold"
+            app:layout_constraintBottom_toBottomOf="@+id/average_cold"/>
     <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:hint="@string/time_before_next_order"
             android:ems="10"
             android:id="@+id/order_arival_time_tag"
             app:layout_constraintStart_toStartOf="parent"

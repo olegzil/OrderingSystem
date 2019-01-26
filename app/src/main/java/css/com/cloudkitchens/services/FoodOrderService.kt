@@ -19,6 +19,7 @@ import java.lang.Thread.sleep
 import java.nio.charset.Charset
 import java.util.*
 import java.util.concurrent.ThreadLocalRandom
+import java.util.concurrent.TimeUnit
 
 /**
  * Service emulates a server. The service reads JSON data from a resource file in this APK, parser the the data and
@@ -138,6 +139,9 @@ class FoodOrderService : Service(), KitchenOrderNotification {
     }
 
     override fun getOrderNotificationChannel() = orderNotification
+    override fun getOrderHeartbeat(): Observable<Long> {
+        return Observable.interval(1, TimeUnit.SECONDS)
+    }
 
     /**
      * This method generates random kitchen orders.
@@ -148,11 +152,15 @@ class FoodOrderService : Service(), KitchenOrderNotification {
         debugTime = System.currentTimeMillis()
         while (continueRunning) {
             val sleepTime = sampleTime(POISSON_LAMBDA)
-            printLog("time before next order: $sleepTime")
+            val time1= "%.2f".format(sleepTime)
+            val time2 = "%.2f".format(accumulatedTime/sampleCount)
+            printLog("time before next order: $time1 average order time $time2")
             getKitchenOrder()?.let {
                 accumulatedTime += sleepTime
                 sampleCount += 1
-                orderNotification?.onNext(KitchenOrderMetadata(it, sleepTime, accumulatedTime/sampleCount))
+                orderNotification?.run {
+                    onNext(KitchenOrderMetadata(it, sleepTime, accumulatedTime/sampleCount))
+                }
             }
             sleep(sleepTime.toLong()*1000)
         }
