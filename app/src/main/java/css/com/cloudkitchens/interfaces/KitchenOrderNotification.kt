@@ -1,8 +1,8 @@
 package css.com.cloudkitchens.interfaces
 
-import css.com.cloudkitchens.dataproviders.KitchenOrder
+import css.com.cloudkitchens.dataproviders.KitchenOrderMetadata
 import io.reactivex.subjects.PublishSubject
 
 interface KitchenOrderNotification {
-    fun getOrderNotificationChannel() : PublishSubject<KitchenOrder>?
+    fun getOrderNotificationChannel() : PublishSubject<KitchenOrderMetadata>?
 }

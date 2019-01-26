@@ -9,8 +9,9 @@ import android.os.IBinder
 import android.support.v7.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
-import css.com.cloudkitchens.constants.Constants
-import css.com.cloudkitchens.dataproviders.KitchenOrder
+import css.com.cloudkitchens.dataproviders.KitchenOrderMetadata
+import css.com.cloudkitchens.dataproviders.KitchenOrderShelfStatus
+import css.com.cloudkitchens.managers.ShelfManager
 import css.com.cloudkitchens.services.FoodOrderService
 import css.com.cloudkitchens.utilities.printLog
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -24,7 +25,7 @@ import kotlinx.android.synthetic.main.fragment_main_view.*
 class MainActivity : AppCompatActivity(), ServiceConnection {
     private val disposables = CompositeDisposable()
     private var kitchenService: FoodOrderService? = null
-
+    private var shelfManager: ShelfManager?=null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(css.com.cloudkitchens.R.layout.activity_main)
@@ -32,96 +33,61 @@ class MainActivity : AppCompatActivity(), ServiceConnection {
         val service = Intent(applicationContext, FoodOrderService::class.java)
         applicationContext.startService(service)
     }
-    fun updateOverflow(){
-        var overflowCount=0
-        if (overflowCount < Constants.MAX_OVERFLOW_SHELF_CAPACITY){
-            overflowCount = count_overflow.text.toString().toInt()
-            overflowCount++
-            count_overflow.text = overflowCount.toString()
-        }
 
+    fun monitorMetaData() {
+        kitchenService?.let { service ->
+            service.getOrderNotificationChannel()?.let { metaData ->
+                metaData.subscribeOn(Schedulers.io())
+                metaData.observeOn(AndroidSchedulers.mainThread())
+                metaData.subscribeWith(object:DisposableObserver<KitchenOrderMetadata>(){
+                    override fun onComplete() {
+                        // Do nothing
+                    }
+
+                    override fun onNext(orderMetaData: KitchenOrderMetadata) {
+                        next_order_arival_time.text =
+                            "%.2f/%.2f".format(orderMetaData.nextArrivalTime, orderMetaData.averageArrivalTime)                    }
+
+                    override fun onError(e: Throwable) {
+                        printLog(e.toString())
+                    }
+
+                })
+            }
+        }
     }
-    fun monitorOverflow(){
-        kitchenService?.let {service ->
-            service.getOrderNotificationChannel()?.let {orderNotifier->
-                disposables.add(orderNotifier.subscribeOn(Schedulers.io())
+
+    private fun monitorOrderCount() {
+        shelfManager?.getKitchenOrdersStatus()?.let { orderStatus ->
+            disposables.add(
+                orderStatus.subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribeWith(object : DisposableObserver<KitchenOrder>(){
-                        override fun onComplete() {}
-                        override fun onNext(order: KitchenOrder) {
-                            var overflowCount = 0
-                            when(order.temp){
-                                "hot" ->    {
-                                    var count = count_hot.text.toString().toInt()
-                                    if (count >= Constants.MAX_HOT_SHELF_CAPACITY) {
-                                        count--
-                                        count_hot.text = count.toString()
-                                        updateOverflow()
-                                    }
+                    .subscribeWith(object : DisposableObserver<KitchenOrderShelfStatus>() {
+                        override fun onComplete() {
+                            //Do nothing
+                        }
+
+                        override fun onNext(orders: KitchenOrderShelfStatus) {
+                            orders.shelfStatus.forEach { order ->
+                                when (order.first) {
+                                    "hot" -> count_hot.text = order.second.toString()
+                                    "cold" -> count_cold.text = order.second.toString()
+                                    "frozen" -> count_frozen.text = order.second.toString()
+                                    "overflow" -> count_overflow.text = order.second.toString()
+                                    else -> printLog("unknown temperature: ${order.first}")
                                 }
-                                "cold" ->   {
-                                    var count = count_cold.text.toString().toInt()
-                                    if (count >= Constants.MAX_COLD_SHELF_CAPCITY) {
-                                        count_cold.text = count.toString()
-                                        count--
-                                        count_cold.text = count.toString()
-                                        updateOverflow()
-                                    }
-                                }
-                                "frozen" -> {
-                                    var count = count_cold.text.toString().toInt()
-                                    if (count >= Constants.MAX_FROZEN_SHELF_CAPCITY) {
-                                        count_cold.text = count.toString()
-                                        count--
-                                        count_cold.text = count.toString()
-                                        updateOverflow()
-                                    }
-                                    count_frozen.text = count.toString()
-                                }
-                                else-> printLog("unknown temperature: ${order.temp}")
                             }
                         }
 
                         override fun onError(e: Throwable) {
                             printLog(e.toString())
                         }
-                    }))
-            }
+                    })
+            )
         }
+
     }
 
-    fun updateOrderCount(){
-        kitchenService?.let {service ->
-            service.getOrderNotificationChannel()?.let {orderNotifier->
-                disposables.add(orderNotifier.subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribeWith(object : DisposableObserver<KitchenOrder>(){
-                        override fun onComplete() {}
-                        override fun onNext(order: KitchenOrder) {
-                            when(order.temp){
-                                "hot" ->    {
-                                    val count = count_hot.text.toString().toInt()+1
-                                    count_hot.text = count.toString()
-                                }
-                                "cold" ->   {
-                                    val count = count_cold.text.toString().toInt()+1
-                                    count_cold.text = count.toString()
-                                }
-                                "frozen" -> {
-                                    val count = count_frozen.text.toString().toInt()+1
-                                    count_frozen.text = count.toString()
-                                }
-                                else-> printLog("unknown temperature: ${order.temp}")
-                            }
-                        }
-
-                        override fun onError(e: Throwable) {
-                            printLog(e.toString())
-                        }
-                    }))
-            }
-        }
-    }
     override fun onServiceDisconnected(name: ComponentName?) {
         disposables.clear()
     }
@@ -133,9 +99,9 @@ class MainActivity : AppCompatActivity(), ServiceConnection {
     override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
         val serviceBinder = service as FoodOrderService.OrderSourceBinder
         kitchenService = serviceBinder.getService()
-        updateOrderCount()
-        monitorOverflow()
-        updateOverflow()
+        shelfManager = ShelfManager(serviceBinder.getService())
+        monitorOrderCount()
+//        monitorMetaData()
     }
 
     /**
@@ -145,7 +111,8 @@ class MainActivity : AppCompatActivity(), ServiceConnection {
         super.onResume()
         val intent = Intent(this, FoodOrderService::class.java)
         bindService(intent, this, Context.BIND_AUTO_CREATE)
-        updateOrderCount()
+        monitorOrderCount()
+//        monitorMetaData()
     }
 
     /**

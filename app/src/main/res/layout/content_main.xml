@@ -9,5 +9,5 @@
         tools:showIn="@layout/activity_main"
         tools:context=".activities.MainActivity">
 
-    <include layout="@layout/fragment_main_view"/>
+    <include layout="@layout/fragment_main_view" android:id="@+id/include"/>
 </android.support.constraint.ConstraintLayout>

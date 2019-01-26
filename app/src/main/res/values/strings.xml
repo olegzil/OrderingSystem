@@ -13,4 +13,5 @@
     <string name="hot_text_item_count">0</string>
     <string name="shelf_average_time">0</string>
     <string name="shelf_visual_indicator">Food spoilage indicator</string>
+    <string name="time_before_next_order">"Time next/average: "</string>
 </resources>

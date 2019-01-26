@@ -4,9 +4,12 @@ import android.app.Service
 import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
+import css.com.cloudkitchens.constants.Constants.POISSON_LAMBDA
 import css.com.cloudkitchens.dataproviders.KitchenOrder
+import css.com.cloudkitchens.dataproviders.KitchenOrderMetadata
 import css.com.cloudkitchens.interfaces.KitchenOrderNotification
 import css.com.cloudkitchens.utilities.printLog
+import io.reactivex.Observable
 import io.reactivex.subjects.PublishSubject
 import kotlinx.coroutines.Job
 import org.json.JSONArray
@@ -14,6 +17,7 @@ import java.io.InputStream
 import java.lang.Math.random
 import java.lang.Thread.sleep
 import java.nio.charset.Charset
+import java.util.*
 import java.util.concurrent.ThreadLocalRandom
 
 /**
@@ -23,29 +27,36 @@ import java.util.concurrent.ThreadLocalRandom
 class FoodOrderService : Service(), KitchenOrderNotification {
     private var kitchenOrders: JSONArray? = null
     private val binder = OrderSourceBinder()
-    private var orderNotification: PublishSubject<KitchenOrder>? = null
+    private var orderNotification: PublishSubject<KitchenOrderMetadata>? = null
     private var continueRunning = true
-    private var request:Job? = null
+    private var request: Job? = null
     private var orderThread: OrderThread
+    private var debugTime = 0L
+    var sampleCount = 0.0
+    var accumulatedTime = 0.0
+
     init {
         if (kitchenOrders == null)
             kitchenOrders = readKitchenOrders("orders.json")
         if (orderNotification == null)
             orderNotification = PublishSubject.create()
-        orderThread = OrderThread{
+        orderThread = OrderThread {
             orderGenerator()
         }
     }
-    internal class OrderThread( private var predicate:()->Unit) : Thread() {
-        override fun run(){
+
+    internal class OrderThread(private var predicate: () -> Unit) : Thread() {
+        override fun run() {
             predicate()
         }
     }
+
     inner class OrderSourceBinder : Binder() {
-        fun getService() : FoodOrderService{
+        fun getService(): FoodOrderService {
             return this@FoodOrderService
         }
     }
+
     /**
      * This method reads a file provided by [path]. If an exception is thrown
      * it is consumed and null is returned.
@@ -69,29 +80,32 @@ class FoodOrderService : Service(), KitchenOrderNotification {
     }
 
     /**
-     * This method returns a time value using a Poisson distribution given a lambda of [rateParameter], which is defaulted to 3.5
-     * The time value is in seconds and it is used to determine when to publish the next order to the kitchen
-     *
+     * This method returns a time value using a Poisson distribution given a lambda of [rateParameter], which is defaulted to 3.25
+     * Time unit is assumed to be one second
      * */
-    private fun timeOfNextOrder(rateParameter: Float = 3.25f): Double {
-        return -Math.log(1.0f - random() / (Int.MAX_VALUE.toDouble() + 1.0)) / rateParameter
+    private fun sampleTime(rateParameter: Double = 3.25): Double {
+        val adjustedRate = 1.0 / rateParameter
+        return (-Math.log(1.0f - random()) / adjustedRate)
     }
 
     /**
-    * This method returns an [Observable] that emits a random kitchen order based on a Poisson distribution with a specified lambda.
+     * This method returns an [Observable] that emits a random kitchen order based on a Poisson distribution with a specified lambda.
      * The distribution value determines the rate of emision
-    * */
-    private fun getKitchenOrder() : KitchenOrder? {
+     * */
+    private fun getKitchenOrder(): KitchenOrder? {
         kitchenOrders?.let { orderArray ->
             val index = ThreadLocalRandom.current().nextInt(0, orderArray.length())
             val retVal = orderArray.getJSONObject(index)
             return KitchenOrder(
+                UUID.randomUUID().toString(),
                 retVal.getString("name"),
                 retVal.getString("temp"),
                 retVal.getInt("shelfLife"),
-                retVal.getDouble("decayRate")
+                retVal.getDouble("decayRate"),
+                System.currentTimeMillis()
             )
         }
+        return null
     }
 
     override fun onRebind(intent: Intent?) {
@@ -101,6 +115,7 @@ class FoodOrderService : Service(), KitchenOrderNotification {
             orderThread.start()
         super.onRebind(intent)
     }
+
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         kitchenOrders = readKitchenOrders("orders.json")
         return Service.START_NOT_STICKY
@@ -112,6 +127,7 @@ class FoodOrderService : Service(), KitchenOrderNotification {
         stopSelf()
         return super.onUnbind(intent)
     }
+
     override fun onBind(intent: Intent?): IBinder? {
         continueRunning = true
         printLog("from Service.onBind")
@@ -120,22 +136,25 @@ class FoodOrderService : Service(), KitchenOrderNotification {
             orderThread.start()
         return binder
     }
+
     override fun getOrderNotificationChannel() = orderNotification
 
     /**
      * This method generates random kitchen orders.
-     * The coroutine is interruptable. If the [continueRunning] flag is set to false the while loop will terminate
+     * The thread is interruptable. If the [continueRunning] flag is set to false the while loop will terminate
      * A publish/subscriber notification method is used to send out notifications of type KitchenOrder
      */
     private fun orderGenerator() {
+        debugTime = System.currentTimeMillis()
         while (continueRunning) {
-            val delayTime = timeOfNextOrder()
-            printLog("delay time: $delayTime")
-            val order = getKitchenOrder()
-            order?.let {
-                orderNotification?.onNext(it)
+            val sleepTime = sampleTime(POISSON_LAMBDA)
+            printLog("time before next order: $sleepTime")
+            getKitchenOrder()?.let {
+                accumulatedTime += sleepTime
+                sampleCount += 1
+                orderNotification?.onNext(KitchenOrderMetadata(it, sleepTime, accumulatedTime/sampleCount))
             }
-            sleep(1000)
+            sleep(sleepTime.toLong()*1000)
         }
     }
 }
