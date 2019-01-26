@@ -1,11 +1,11 @@
 package css.com.cloudkitchens.shelves
 
-import css.com.cloudkitchens.dataproviders.KitchenOrder
+import css.com.cloudkitchens.dataproviders.KitchenOrderDetail
 import css.com.cloudkitchens.interfaces.ShelfInterface
 import css.com.cloudkitchens.interfaces.ShelfOrderInterface
 
 abstract class BaseShelf : ShelfInterface {
-    private class ShelfOrder(private var order: KitchenOrder) : ShelfOrderInterface {
+    private class ShelfOrder(private var orderDetail: KitchenOrderDetail) : ShelfOrderInterface {
         private var decayRateMultiplier=1.0
         var orderAge = 0L
         override fun getDecayRate() = decayRateMultiplier
@@ -15,20 +15,20 @@ abstract class BaseShelf : ShelfInterface {
         }
 
         override fun ageOrderBy(delta: Long) {
-            orderAge = Math.min(order.shelfLife.toLong(), orderAge+delta)
+            orderAge = Math.min(orderDetail.shelfLife.toLong(), orderAge+delta)
         }
 
         override fun isExpired(): Boolean {
-            val age = (order.shelfLife - orderAge) - (order.decayRate*decayRateMultiplier*orderAge)
+            val age = (orderDetail.shelfLife - orderAge) - (orderDetail.decayRate*decayRateMultiplier*orderAge)
             return Math.max(0.0, age) == 0.0
         }
 
         override fun timeStamp(): Long {
-            return order.timeStamp
+            return orderDetail.timeStamp
         }
 
-        override fun getOrder(): KitchenOrder {
-            return order
+        override fun getOrder(): KitchenOrderDetail {
+            return orderDetail
         }
     }
 
@@ -42,51 +42,51 @@ abstract class BaseShelf : ShelfInterface {
     }
 
     override fun getOrdersCount() = orderList.size
-    override fun getOldestOrder(): KitchenOrder? {
+    override fun getOldestOrder(): KitchenOrderDetail? {
         if (orderList.isEmpty())
             return null
         var prevOrderAge = 0L
-        var requestedOrder: KitchenOrder? = null
+        var requestedOrderDetail: KitchenOrderDetail? = null
         orderList.forEach { order ->
             if (order.value.timeStamp() >= prevOrderAge) {
-                requestedOrder = order.value.getOrder()
+                requestedOrderDetail = order.value.getOrder()
                 prevOrderAge = order.value.timeStamp()
             }
         }
-        return requestedOrder
+        return requestedOrderDetail
     }
 
-    override fun getNewestOrder(): KitchenOrder? {
+    override fun getNewestOrder(): KitchenOrderDetail? {
         if (orderList.isEmpty())
             return null
         var prevOrderAge = Long.MAX_VALUE
-        var requestedOrder: KitchenOrder? = null
+        var requestedOrderDetail: KitchenOrderDetail? = null
         orderList.forEach { order ->
             if (order.value.timeStamp() < prevOrderAge) {
-                requestedOrder = order.value.getOrder()
+                requestedOrderDetail = order.value.getOrder()
                 prevOrderAge = order.value.timeStamp()
             }
         }
-        return requestedOrder
+        return requestedOrderDetail
     }
 
     @Synchronized
-    override fun removeOrder(id: String): KitchenOrder? {
+    override fun removeOrder(id: String): KitchenOrderDetail? {
         if (orderList.isEmpty() || !orderList.containsKey(id))
             return null
         return orderList.remove(id)?.getOrder()
     }
 
     @Synchronized
-    override fun addOrder(order: KitchenOrder) {
-        orderList[order.id] = ShelfOrder(order)
+    override fun addOrder(orderDetail: KitchenOrderDetail) {
+        orderList[orderDetail.id] = ShelfOrder(orderDetail)
     }
 
     @Synchronized
-    override fun removeOrder(): List<KitchenOrder> {
+    override fun removeOrder(): List<KitchenOrderDetail> {
         if (orderList.isEmpty())
             return listOf()
-        val orders = mutableListOf<KitchenOrder>()
+        val orders = mutableListOf<KitchenOrderDetail>()
         orderList.forEach { order ->
             if (order.value.isExpired()) {
                 orders.add(order.value.getOrder())

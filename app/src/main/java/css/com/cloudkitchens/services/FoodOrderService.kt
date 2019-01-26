@@ -5,7 +5,7 @@ import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
 import css.com.cloudkitchens.constants.Constants.POISSON_LAMBDA
-import css.com.cloudkitchens.dataproviders.KitchenOrder
+import css.com.cloudkitchens.dataproviders.KitchenOrderDetail
 import css.com.cloudkitchens.dataproviders.KitchenOrderMetadata
 import css.com.cloudkitchens.interfaces.KitchenOrderNotification
 import css.com.cloudkitchens.utilities.printLog
@@ -90,14 +90,14 @@ class FoodOrderService : Service(), KitchenOrderNotification {
     }
 
     /**
-     * This method returns an [Observable] that emits a random kitchen order based on a Poisson distribution with a specified lambda.
+     * This method returns an [Observable] that emits a random kitchen orderDetail based on a Poisson distribution with a specified lambda.
      * The distribution value determines the rate of emision
      * */
-    private fun getKitchenOrder(): KitchenOrder? {
+    private fun getKitchenOrder(): KitchenOrderDetail? {
         kitchenOrders?.let { orderArray ->
             val index = ThreadLocalRandom.current().nextInt(0, orderArray.length())
             val retVal = orderArray.getJSONObject(index)
-            return KitchenOrder(
+            return KitchenOrderDetail(
                 UUID.randomUUID().toString(),
                 retVal.getString("name"),
                 retVal.getString("temp"),
@@ -146,7 +146,7 @@ class FoodOrderService : Service(), KitchenOrderNotification {
     /**
      * This method generates random kitchen orders.
      * The thread is interruptable. If the [continueRunning] flag is set to false the while loop will terminate
-     * A publish/subscriber notification method is used to send out notifications of type KitchenOrder
+     * A publish/subscriber notification method is used to send out notifications of type KitchenOrderDetail
      */
     private fun orderGenerator() {
         debugTime = System.currentTimeMillis()
@@ -154,7 +154,7 @@ class FoodOrderService : Service(), KitchenOrderNotification {
             val sleepTime = sampleTime(POISSON_LAMBDA)
             val time1= "%.2f".format(sleepTime)
             val time2 = "%.2f".format(accumulatedTime/sampleCount)
-            printLog("time before next order: $time1 average order time $time2")
+            printLog("time before next orderDetail: $time1 average orderDetail time $time2")
             getKitchenOrder()?.let {
                 accumulatedTime += sleepTime
                 sampleCount += 1

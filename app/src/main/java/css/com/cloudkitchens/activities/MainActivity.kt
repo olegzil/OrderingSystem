@@ -7,6 +7,8 @@ import android.content.ServiceConnection
 import android.os.Bundle
 import android.os.IBinder
 import android.support.v7.app.AppCompatActivity
+import android.support.v7.widget.LinearLayoutManager
+import android.support.v7.widget.RecyclerView
 import android.view.Menu
 import android.view.MenuItem
 import css.com.cloudkitchens.dataproviders.KitchenOrderShelfStatus
@@ -25,12 +27,30 @@ class MainActivity : AppCompatActivity(), ServiceConnection {
     private val disposables = CompositeDisposable()
     private var kitchenService: FoodOrderService? = null
     private var shelfManager: ShelfManager? = null
+    private lateinit var recyclerViewHot:RecyclerView
+    private lateinit var recyclerViewCold:RecyclerView
+    private lateinit var recyclerViewFrozen:RecyclerView
+    private lateinit var recyclerViewOverFlow:RecyclerView
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(css.com.cloudkitchens.R.layout.activity_main)
         setSupportActionBar(toolbar)
+        initializeRecyclerViews()
         val service = Intent(applicationContext, FoodOrderService::class.java)
         applicationContext.startService(service)
+    }
+
+    private fun initializeRecyclerViews(){
+        recyclerViewHot = recycler_hot_list
+        recyclerViewCold = recycler_cold_list
+        recyclerViewFrozen = recycler_frozen_list
+        recyclerViewOverFlow = recycler_overflow_list
+
+        recyclerViewHot.layoutManager = LinearLayoutManager(applicationContext, LinearLayoutManager.HORIZONTAL, false)
+        recyclerViewCold.layoutManager = LinearLayoutManager(applicationContext, LinearLayoutManager.HORIZONTAL, false)
+        recyclerViewFrozen.layoutManager = LinearLayoutManager(applicationContext, LinearLayoutManager.HORIZONTAL, false)
+        recyclerViewOverFlow.layoutManager = LinearLayoutManager(applicationContext, LinearLayoutManager.HORIZONTAL, false)
+
     }
 
     private fun monitorOrderCount() {
