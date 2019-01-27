@@ -22,6 +22,9 @@ import io.reactivex.observers.DisposableObserver
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.PublishSubject
 
+/**
+ * This class is responsible for managing the various shelves and driver pickup.
+ */
 class ShelfManager(private val service: FoodOrderService) {
     private enum class Shelves {
         SHELF_HOT,
@@ -32,6 +35,7 @@ class ShelfManager(private val service: FoodOrderService) {
 
     private val shelves = mutableMapOf<Shelves, ShelfInterface>()
 
+    //Initialize shelves
     init {
         shelves[Shelves.SHELF_HOT] = ShelfHot()
         shelves[Shelves.SHELF_COLD] = ShelfCold()
@@ -39,6 +43,9 @@ class ShelfManager(private val service: FoodOrderService) {
         shelves[Shelves.SHELF_OVERFLOW] = ShelfOverflow()
     }
 
+    /**
+     * a helper method to remove expired orders. The [order] parameter is added to the overflow shelf if it below capacity
+     */
     private fun expiredOrderRemoveHelper(order: KitchenOrderDetail) {
         shelves[Shelves.SHELF_OVERFLOW]?.run {
             if (getOrdersCount() == MAX_OVERFLOW_SHELF_CAPACITY)
@@ -47,6 +54,12 @@ class ShelfManager(private val service: FoodOrderService) {
         shelves[Shelves.SHELF_OVERFLOW]?.addOrder(order)
     }
 
+    /**
+     * a helper method that removes lists of expired orders. The parameter [orderDetails] contains
+     * a list of orders to be removed. If the [Shelves.SHELF_OVERFLOW] shelf is up to capacity, the method returns. Otherwise,
+     * the target list is sorted using the order time stamp as key. The oldes orders are removed first. The removed orders are
+     * added to the overflow shelve or destroyed, depending on the overflow shelf capacity
+     */
     private fun expiredOrdersRemoveHelper(orderDetails: List<KitchenOrderDetail>) {
         shelves[Shelves.SHELF_OVERFLOW]?.run {
             if (getOrdersCount() == MAX_OVERFLOW_SHELF_CAPACITY)
@@ -65,6 +78,9 @@ class ShelfManager(private val service: FoodOrderService) {
         }
     }
 
+    /**
+     * Same as expiredOrdersRemoveHelper, but for a single order
+     */
     @Synchronized
     private fun removeExpiredOrdersFromSingleShelf(predicateRemove: () -> List<KitchenOrderDetail>?) {
         predicateRemove()?.let { orderList ->
@@ -83,6 +99,10 @@ class ShelfManager(private val service: FoodOrderService) {
         }
     }
 
+    /**
+     * This is the root method that triggers shelf cleanup. Expired orders are collected into lists.
+     * If the overflow shelf is below capacity, orders are moved from the removal lists to the overflow shelf.
+     */
     @Synchronized
     private fun removeExpiredOrders() {
         val hotOrders = shelves[Shelves.SHELF_HOT]?.removeOrder()
@@ -100,13 +120,17 @@ class ShelfManager(private val service: FoodOrderService) {
         }
     }
 
+    /**
+     * This method will move orders from the overflow shelf to an appropriate shelf (hot, cold, etc)
+     * The oldest orders are moved first
+     */
     @Synchronized
     private fun moveOrdersFromOverflow() {
         val ordersToRemove = mutableListOf<KitchenOrderDetail>()
         shelves[Shelves.SHELF_OVERFLOW]?.run {
             val count = getOrdersCount()
             for (i in count downTo 0) {
-                val order = getNewestOrder()
+                val order = getOldestOrder()
                 order?.run {
                     when (temp) {
                         "hot" -> {
@@ -147,6 +171,10 @@ class ShelfManager(private val service: FoodOrderService) {
         }
     }
 
+    /**
+     * This method initiates the process of listening for driver ariaval. Driver arival is random along with the orders the driver will pickup
+     * Each arival also results in an order being removed from the shelf
+     */
     fun initiateDeliveries(): Disposable {
         return service.getDriverNotification()
             .subscribeWith(object : DisposableObserver<String>() {
@@ -181,6 +209,10 @@ class ShelfManager(private val service: FoodOrderService) {
             })
     }
 
+    /**
+     * This method is executed in one second intervals. It advances the order age. After advancing the order age
+     * it interogates each shelf and removes any expired orders.
+     */
     fun initiateOrderAging(): Disposable {
         val start = System.currentTimeMillis()
         return service.getOrderHeartbeat()
@@ -218,6 +250,11 @@ class ShelfManager(private val service: FoodOrderService) {
         return Pair(orders, overflowOrders)
     }
 
+    /**
+     * This is the method that is called from the main loop (U.I. loop) to monitor order arival. Each time an order arives it is added
+     *  to the appopriate shelf. The orders arive from the server as [KitchenOrderServerDetail] orders. These are then flatMaped into
+     *  a [KitchenOrderShelfStatus] class that is consumed by the U.I.
+     */
     fun getKitchenOrdersStatus(): Observable<KitchenOrderShelfStatus>? {
         return service.getOrderNotificationChannel()
             ?.run<PublishSubject<KitchenOrderServerDetail>, Observable<KitchenOrderShelfStatus>?> {

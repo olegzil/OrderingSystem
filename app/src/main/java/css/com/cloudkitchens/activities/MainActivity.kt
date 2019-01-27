@@ -24,7 +24,10 @@ import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_main_view.*
 
-
+/**
+ * The one and only main activity. The activity consists of three recycler views with their respective detail items
+ * A shelf is modeled by a recycler view
+ */
 class MainActivity : AppCompatActivity(), ServiceConnection {
     private val disposables = CompositeDisposable()
     private var kitchenService: FoodOrderService? = null
@@ -62,7 +65,10 @@ class MainActivity : AppCompatActivity(), ServiceConnection {
 
     }
 
-    private fun monitorOrderCount() {
+    /**
+     * The method listens for order arival emitted by the [ShelfManager]. It them updates the appropriate recycler view
+     */
+    private fun monitorOrderArival() {
         shelfManager?.getKitchenOrdersStatus()?.let { orderStatus ->
             disposables.add(
                 orderStatus.subscribeOn(Schedulers.io())
@@ -121,7 +127,7 @@ class MainActivity : AppCompatActivity(), ServiceConnection {
                 disposables.add(initiateOrderAging())
                 disposables.add(initiateDeliveries())
             }
-            monitorOrderCount()
+            monitorOrderArival()
         }
     }
 
@@ -132,7 +138,7 @@ class MainActivity : AppCompatActivity(), ServiceConnection {
         super.onResume()
         val intent = Intent(this, FoodOrderService::class.java)
         bindService(intent, this, Context.BIND_AUTO_CREATE)
-        monitorOrderCount()
+        monitorOrderArival()
     }
 
     /**
