@@ -16,6 +16,9 @@ abstract class BaseShelf : ShelfInterface {
 
         override fun ageOrderBy(delta: Long) {
             orderAge = Math.min(orderDetail.shelfLife.toLong(), orderAge+delta)
+            orderDetail.normalizedShelfLife = orderAge.toDouble() / orderDetail.shelfLife
+            orderDetail.orderRemainingLife = orderDetail.shelfLife - orderAge
+            orderDetail.orderDecay = (orderDetail.shelfLife - orderAge) - (orderDetail.decayRate*decayRateMultiplier*orderAge)
         }
 
         override fun isExpired(): Boolean {

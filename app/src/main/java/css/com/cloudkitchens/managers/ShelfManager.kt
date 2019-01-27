@@ -1,6 +1,9 @@
 package css.com.cloudkitchens.managers
 
 import css.com.cloudkitchens.constants.Constants
+import css.com.cloudkitchens.constants.Constants.AGING_DELTAL
+import css.com.cloudkitchens.constants.Constants.MAX_COLD_SHELF_CAPCITY
+import css.com.cloudkitchens.constants.Constants.MAX_FROZEN_SHELF_CAPCITY
 import css.com.cloudkitchens.constants.Constants.MAX_HOT_SHELF_CAPACITY
 import css.com.cloudkitchens.constants.Constants.MAX_OVERFLOW_SHELF_CAPACITY
 import css.com.cloudkitchens.dataproviders.KitchenOrderDetail
@@ -68,6 +71,7 @@ class ShelfManager(private val service: FoodOrderService) {
         }
     }
 
+    @Synchronized
     private fun removeExpiredOrders() {
         val hotOrders = shelves[Shelves.SHELF_HOT]?.removeOrder()
         val coldOrders = shelves[Shelves.SHELF_COLD]?.removeOrder()
@@ -84,6 +88,7 @@ class ShelfManager(private val service: FoodOrderService) {
         }
     }
 
+    @Synchronized
     private fun moveOrdersFromOverflow() {
         val ordersToRemove = mutableListOf<KitchenOrderDetail>()
         shelves[Shelves.SHELF_OVERFLOW]?.run {
@@ -102,7 +107,7 @@ class ShelfManager(private val service: FoodOrderService) {
                         }
                         "cold" -> {
                             shelves[Shelves.SHELF_COLD]?.run {
-                                if (getOrdersCount() < MAX_HOT_SHELF_CAPACITY) {
+                                if (getOrdersCount() < MAX_COLD_SHELF_CAPCITY) {
                                     addOrder(order)
                                     ordersToRemove.add(order)
                                 }
@@ -110,7 +115,7 @@ class ShelfManager(private val service: FoodOrderService) {
                         }
                         "frozen" -> {
                             shelves[Shelves.SHELF_FROZEN]?.run {
-                                if (getOrdersCount() < MAX_HOT_SHELF_CAPACITY) {
+                                if (getOrdersCount() < MAX_FROZEN_SHELF_CAPCITY) {
                                     addOrder(order)
                                     ordersToRemove.add(order)
                                 }
@@ -131,6 +136,7 @@ class ShelfManager(private val service: FoodOrderService) {
     }
 
     fun initiateOrderAging(): Disposable {
+        val start = System.currentTimeMillis()
         return service.getOrderHeartbeat()
             .subscribeOn(Schedulers.io())
             .subscribeWith(object : DisposableObserver<Long>() {
@@ -139,12 +145,13 @@ class ShelfManager(private val service: FoodOrderService) {
                 }
 
                 override fun onNext(delta: Long) {
-                    shelves[Shelves.SHELF_HOT]?.ageOrder(delta)
-                    shelves[Shelves.SHELF_COLD]?.ageOrder(delta)
-                    shelves[Shelves.SHELF_FROZEN]?.ageOrder(delta)
-                    shelves[Shelves.SHELF_OVERFLOW]?.ageOrder(delta)
+                    shelves[Shelves.SHELF_HOT]?.ageOrder(AGING_DELTAL)
+                    shelves[Shelves.SHELF_COLD]?.ageOrder(AGING_DELTAL)
+                    shelves[Shelves.SHELF_FROZEN]?.ageOrder(AGING_DELTAL)
+                    shelves[Shelves.SHELF_OVERFLOW]?.ageOrder(AGING_DELTAL)
                     removeExpiredOrders()
                     moveOrdersFromOverflow()
+                    printLog("order hart beat ${System.currentTimeMillis() - start}")
                 }
 
                 override fun onError(e: Throwable) {
@@ -188,7 +195,7 @@ class ShelfManager(private val service: FoodOrderService) {
                                             serverOrder.timeStamp,
                                             0.0,
                                             0.0,
-                                            0.0
+                                            0
                                         )
                                     )
                                 }
@@ -213,7 +220,7 @@ class ShelfManager(private val service: FoodOrderService) {
                                             serverOrder.timeStamp,
                                             0.0,
                                             0.0,
-                                            0.0
+                                            0
                                         )
                                     )
                             }
@@ -229,16 +236,16 @@ class ShelfManager(private val service: FoodOrderService) {
                                 } else
                                     shelves[Shelves.SHELF_FROZEN]?.addOrder(
                                         KitchenOrderDetail(
-                                        serverOrder.id,
-                                        serverOrder.name,
-                                        serverOrder.temp,
-                                        serverOrder.shelfLife,
-                                        serverOrder.decayRate,
-                                        serverOrder.timeStamp,
-                                        0.0,
-                                        0.0,
-                                        0.0
-                                    )
+                                            serverOrder.id,
+                                            serverOrder.name,
+                                            serverOrder.temp,
+                                            serverOrder.shelfLife,
+                                            serverOrder.decayRate,
+                                            serverOrder.timeStamp,
+                                            0.0,
+                                            0.0,
+                                            0
+                                        )
                                     )
                             }
                         }

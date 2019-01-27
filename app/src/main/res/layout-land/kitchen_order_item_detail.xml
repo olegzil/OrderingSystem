@@ -14,20 +14,23 @@
             android:id="@+id/constraint_layout">
 
         <TextView
-                android:text="0"
-                android:layout_width="8dp"
-                android:layout_height="14dp"
-                android:id="@+id/order_normalized_life" android:textSize="12sp"
+                android:text="5"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/order_normalized_life"
+                android:textSize="12sp"
                 android:textStyle="bold"
                 app:layout_constraintStart_toStartOf="@+id/order_decay_rate"
-                app:layout_constraintEnd_toEndOf="parent" android:layout_marginEnd="8dp"
-                app:layout_constraintTop_toBottomOf="@+id/order_name_id" android:layout_marginBottom="1dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginEnd="8dp"
+                app:layout_constraintTop_toBottomOf="@+id/order_name_id"
+                android:layout_marginBottom="1dp"
                 app:layout_constraintBottom_toTopOf="@+id/order_decay_rate"/>
         <TextView
                 android:id="@+id/order_name_id"
                 android:text="@string/order_name"
                 android:layout_width="wrap_content"
-                android:layout_height="14dp"
+                android:layout_height="wrap_content"
                 android:minWidth="0dp"
                 android:paddingStart="8dp"
                 android:paddingEnd="8dp"
@@ -74,8 +77,7 @@
                 android:textStyle="bold"
                 app:layout_constraintStart_toStartOf="@+id/order_shelf_life" app:layout_constraintEnd_toEndOf="parent"
                 android:layout_marginEnd="8dp" android:layout_marginTop="1dp"
-                app:layout_constraintTop_toBottomOf="@+id/order_normalized_life" android:layout_marginBottom="2dp"
-                app:layout_constraintBottom_toTopOf="@+id/order_shelf_life"/>
+                app:layout_constraintTop_toBottomOf="@+id/order_normalized_life"/>
         <TextView
                 android:id="@+id/title_name_id"
                 android:text="@string/order_name"

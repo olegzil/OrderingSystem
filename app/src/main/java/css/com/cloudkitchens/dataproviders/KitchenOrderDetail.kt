@@ -9,7 +9,7 @@ data class KitchenOrderDetail(
     val timeStamp: Long,
     var normalizedShelfLife: Double,
     var orderDecay: Double,
-    var orderRemainingLife: Double
+    var orderRemainingLife: Long
 )
 
 data class KitchenOrderServerDetail(

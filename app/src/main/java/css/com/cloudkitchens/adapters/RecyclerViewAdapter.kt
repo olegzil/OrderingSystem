@@ -9,24 +9,24 @@ import css.com.cloudkitchens.R
 import css.com.cloudkitchens.dataproviders.KitchenOrderDetail
 import css.com.cloudkitchens.interfaces.RecyclerViewAdapterInterface
 
-class RecyclerViewAdapter : RecyclerViewAdapterInterface, RecyclerView.Adapter<RecyclerViewAdapter.CardViewHolder>(){
+class RecyclerViewAdapter : RecyclerViewAdapterInterface, RecyclerView.Adapter<RecyclerViewAdapter.CardViewHolder>() {
     private val itemList = ArrayList<KitchenOrderDetail>()
+
     inner class CardViewHolder(holder: View) : RecyclerView.ViewHolder(holder) {
         fun bind(itemDetail: KitchenOrderDetail, pos: Int) {
             val name = itemView.findViewById<TextView>(R.id.order_name_id)
             val temp = itemView.findViewById<TextView>(R.id.order_temperture)
             val maxLife = itemView.findViewById<TextView>(R.id.order_shelf_life)
             val decayRate = itemView.findViewById<TextView>(R.id.order_decay_rate)
-            val normalizedLife =itemView.findViewById<TextView>(R.id.order_normalized_life)
+            val normalizedLife = itemView.findViewById<TextView>(R.id.order_normalized_life)
             val remainingLife = itemView.findViewById<TextView>(R.id.order_life_remaining)
 
             name.text = itemDetail.name
             temp.text = itemDetail.temp
             maxLife.text = itemDetail.shelfLife.toString()
-            val str=String.format("%.3f", itemDetail.decayRate)
-            decayRate.text = str
-            normalizedLife.text = String.format("%.3f", itemDetail.normalizedShelfLife)
-            remainingLife.text = String.format("%.3f", itemDetail.orderRemainingLife)
+            decayRate.text = String.format("%2.3f", itemDetail.decayRate)
+            normalizedLife.text = String.format("%2.3f", itemDetail.normalizedShelfLife)
+            remainingLife.text = itemDetail.orderRemainingLife.toString()
         }
     }
 
@@ -48,16 +48,18 @@ class RecyclerViewAdapter : RecyclerViewAdapterInterface, RecyclerView.Adapter<R
         return itemList.size
     }
 
-    override fun addOrder(order:KitchenOrderDetail){
+    override fun addOrder(order: KitchenOrderDetail) {
         itemList.add(order)
-        notifyItemInserted(itemList.size-1)
+        notifyItemInserted(itemList.size - 1)
     }
-    override fun removeOrder(order:KitchenOrderDetail){
+
+    override fun removeOrder(order: KitchenOrderDetail) {
         itemList.find { order.id == it.id }?.let {
             itemList.remove(it)
         }
         notifyDataSetChanged()
     }
+
     override fun update(newItems: List<KitchenOrderDetail>) {
         itemList.clear()
         itemList.addAll(newItems)

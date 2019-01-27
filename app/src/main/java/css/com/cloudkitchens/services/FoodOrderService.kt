@@ -4,6 +4,7 @@ import android.app.Service
 import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
+import css.com.cloudkitchens.constants.Constants.AGING_HEART_BEAT
 import css.com.cloudkitchens.constants.Constants.POISSON_LAMBDA
 import css.com.cloudkitchens.dataproviders.KitchenOrderServerDetail
 import css.com.cloudkitchens.interfaces.KitchenOrderNotification
@@ -139,7 +140,7 @@ class FoodOrderService : Service(), KitchenOrderNotification {
 
     override fun getOrderNotificationChannel() = orderNotification
     override fun getOrderHeartbeat(): Observable<Long> {
-        return Observable.interval(1, TimeUnit.SECONDS)
+        return Observable.interval(AGING_HEART_BEAT, TimeUnit.MILLISECONDS)
     }
 
     /**
