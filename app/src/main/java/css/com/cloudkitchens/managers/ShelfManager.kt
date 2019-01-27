@@ -193,9 +193,9 @@ class ShelfManager(private val service: FoodOrderService) {
                                             serverOrder.shelfLife,
                                             serverOrder.decayRate,
                                             serverOrder.timeStamp,
+                                            1.0,
                                             0.0,
-                                            0.0,
-                                            0
+                                            serverOrder.shelfLife.toLong()
                                         )
                                     )
                                 }
@@ -218,9 +218,9 @@ class ShelfManager(private val service: FoodOrderService) {
                                             serverOrder.shelfLife,
                                             serverOrder.decayRate,
                                             serverOrder.timeStamp,
+                                            1.0,
                                             0.0,
-                                            0.0,
-                                            0
+                                            serverOrder.shelfLife.toLong()
                                         )
                                     )
                             }
@@ -242,9 +242,9 @@ class ShelfManager(private val service: FoodOrderService) {
                                             serverOrder.shelfLife,
                                             serverOrder.decayRate,
                                             serverOrder.timeStamp,
+                                            1.0,
                                             0.0,
-                                            0.0,
-                                            0
+                                            serverOrder.shelfLife.toLong()
                                         )
                                     )
                             }
