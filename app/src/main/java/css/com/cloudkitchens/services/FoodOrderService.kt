@@ -119,6 +119,8 @@ class FoodOrderService : Service(), KitchenOrderNotification {
         printLog("from Service.onBind")
         if (!dispatchingThread.isAlive)
             dispatchingThread.start()
+        if (!driverThread.isAlive)
+            driverThread.start()
         super.onRebind(intent)
     }
 
@@ -140,6 +142,8 @@ class FoodOrderService : Service(), KitchenOrderNotification {
         kitchenOrders = readKitchenOrders("orders.json")
         if (!dispatchingThread.isAlive)
             dispatchingThread.start()
+        if (!driverThread.isAlive)
+            driverThread.start()
         return binder
     }
 
