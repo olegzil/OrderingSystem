@@ -29,24 +29,29 @@ class FoodOrderService : Service(), KitchenOrderNotification {
     private var kitchenOrders: JSONArray? = null
     private val binder = OrderSourceBinder()
     private var orderNotification: PublishSubject<KitchenOrderServerDetail>? = null
+    private var driverArivalNotification = PublishSubject.create<String>()
     private var continueRunning = true
     private var request: Job? = null
-    private var orderThread: OrderThread
+    private var dispatchingThread: DispatchingThread
+    private var driverThread: DispatchingThread
     private var debugTime = 0L
-    var sampleCount = 0.0
-    var accumulatedTime = 0.0
+    private var sampleCount = 0.0
+    private var accumulatedTime = 0.0
 
     init {
         if (kitchenOrders == null)
             kitchenOrders = readKitchenOrders("orders.json")
         if (orderNotification == null)
             orderNotification = PublishSubject.create()
-        orderThread = OrderThread {
+        dispatchingThread = DispatchingThread {
             orderGenerator()
+        }
+        driverThread = DispatchingThread {
+
         }
     }
 
-    internal class OrderThread(private var predicate: () -> Unit) : Thread() {
+    internal class DispatchingThread(private var predicate: () -> Unit) : Thread() {
         override fun run() {
             predicate()
         }
@@ -112,8 +117,8 @@ class FoodOrderService : Service(), KitchenOrderNotification {
     override fun onRebind(intent: Intent?) {
         continueRunning = true
         printLog("from Service.onBind")
-        if (!orderThread.isAlive)
-            orderThread.start()
+        if (!dispatchingThread.isAlive)
+            dispatchingThread.start()
         super.onRebind(intent)
     }
 
@@ -133,14 +138,33 @@ class FoodOrderService : Service(), KitchenOrderNotification {
         continueRunning = true
         printLog("from Service.onBind")
         kitchenOrders = readKitchenOrders("orders.json")
-        if (!orderThread.isAlive)
-            orderThread.start()
+        if (!dispatchingThread.isAlive)
+            dispatchingThread.start()
         return binder
     }
 
     override fun getOrderNotificationChannel() = orderNotification
+    override fun getDriverNotification() = driverArivalNotification
+
     override fun getOrderHeartbeat(): Observable<Long> {
         return Observable.interval(AGING_HEART_BEAT, TimeUnit.MILLISECONDS)
+    }
+
+    /**
+     * Generate a randome value between 2 and 8. Sleep for that many milliseconds
+     * Once awaken, notify the listener of a random order pickup
+     */
+    private fun driverGenerator() {
+        debugTime = System.currentTimeMillis()
+        while (continueRunning) {
+            val timeOfDirverAriaval = ThreadLocalRandom.current().nextInt(2, 9).toLong()
+            sleep(timeOfDirverAriaval * 1000)
+            printLog("time before next driver arival: $timeOfDirverAriaval")
+            getKitchenOrder()?.let {
+                driverArivalNotification.onNext(it.temp)
+
+            }
+        }
     }
 
     /**
@@ -152,8 +176,8 @@ class FoodOrderService : Service(), KitchenOrderNotification {
         debugTime = System.currentTimeMillis()
         while (continueRunning) {
             val sleepTime = sampleTime(POISSON_LAMBDA)
-            val time1= "%.2f".format(sleepTime)
-            val time2 = "%.2f".format(accumulatedTime/sampleCount)
+            val time1 = "%.2f".format(sleepTime)
+            val time2 = "%.2f".format(accumulatedTime / sampleCount)
             printLog("time before next orderDetail: $time1 average orderDetail time $time2")
             getKitchenOrder()?.let {
                 accumulatedTime += sleepTime
@@ -162,7 +186,7 @@ class FoodOrderService : Service(), KitchenOrderNotification {
                     onNext(it)
                 }
             }
-            sleep(sleepTime.toLong()*1000)
+            sleep(sleepTime.toLong() * 1000)
         }
     }
 }

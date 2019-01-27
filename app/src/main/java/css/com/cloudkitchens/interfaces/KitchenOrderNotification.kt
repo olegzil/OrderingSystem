@@ -7,4 +7,5 @@ import io.reactivex.subjects.PublishSubject
 interface KitchenOrderNotification {
     fun getOrderNotificationChannel() : PublishSubject<KitchenOrderServerDetail>?
     fun getOrderHeartbeat(): Observable<Long>
+    fun getDriverNotification():Observable<String>
 }

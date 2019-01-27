@@ -53,7 +53,15 @@ class ShelfManager(private val service: FoodOrderService) {
         }
     }
 
-    private fun expiredOrderRemoveHelper(orderDetails: List<KitchenOrderDetail>) {
+    private fun expiredOrderRemoveHelper(order: KitchenOrderDetail) {
+        shelves[Shelves.SHELF_OVERFLOW]?.run {
+            if (getOrdersCount() == MAX_OVERFLOW_SHELF_CAPACITY)
+                return
+        }
+        shelves[Shelves.SHELF_OVERFLOW]?.addOrder(order)
+    }
+
+    private fun expiredOrdersRemoveHelper(orderDetails: List<KitchenOrderDetail>) {
         shelves[Shelves.SHELF_OVERFLOW]?.run {
             if (getOrdersCount() == MAX_OVERFLOW_SHELF_CAPACITY)
                 return
@@ -72,6 +80,24 @@ class ShelfManager(private val service: FoodOrderService) {
     }
 
     @Synchronized
+    private fun removeExpiredOrdersFromSingleShelf(predicateRemove: () -> List<KitchenOrderDetail>?) {
+        predicateRemove()?.let { orderList ->
+            shelves[Shelves.SHELF_OVERFLOW]?.run {
+                expiredOrdersRemoveHelper(orderList)
+            }
+        }
+    }
+
+    @Synchronized
+    private fun removeExpiredOrderFromSingleShelf(predicateRemove: () -> KitchenOrderDetail?) {
+        predicateRemove()?.let { orderList ->
+            shelves[Shelves.SHELF_OVERFLOW]?.run {
+                expiredOrderRemoveHelper(orderList)
+            }
+        }
+    }
+
+    @Synchronized
     private fun removeExpiredOrders() {
         val hotOrders = shelves[Shelves.SHELF_HOT]?.removeOrder()
         val coldOrders = shelves[Shelves.SHELF_COLD]?.removeOrder()
@@ -81,9 +107,9 @@ class ShelfManager(private val service: FoodOrderService) {
         //If there is space on the overflow shelf, move the expired orders there
         shelves[Shelves.SHELF_OVERFLOW]?.run {
             if (getOrdersCount() < MAX_OVERFLOW_SHELF_CAPACITY) {
-                hotOrders?.let { expiredOrderRemoveHelper(hotOrders) }          //now move any expired orders to the overflow shelf, if possible.
-                coldOrders?.let { expiredOrderRemoveHelper(coldOrders) }
-                frozenOrders?.let { expiredOrderRemoveHelper(frozenOrders) }
+                hotOrders?.let { expiredOrdersRemoveHelper(hotOrders) }          //now move any expired orders to the overflow shelf, if possible.
+                coldOrders?.let { expiredOrdersRemoveHelper(coldOrders) }
+                frozenOrders?.let { expiredOrdersRemoveHelper(frozenOrders) }
             }
         }
     }
@@ -135,6 +161,40 @@ class ShelfManager(private val service: FoodOrderService) {
         }
     }
 
+    fun initiateDeliveries(): Disposable {
+        return service.getDriverNotification()
+            .subscribeWith(object : DisposableObserver<String>() {
+                override fun onComplete() {
+                    //Do nothing
+                }
+
+                override fun onNext(selector: String) {
+                    when (selector) {
+                        "hot" -> {
+                            shelves[Shelves.SHELF_HOT]?.run {
+                                removeExpiredOrderFromSingleShelf { removeOrder(getKitchenOrderDetailList().sortedByDescending { it.timeStamp }[0].id) }
+                            }
+                        }
+                        "cold" -> {
+                            shelves[Shelves.SHELF_COLD]?.run {
+                                removeExpiredOrderFromSingleShelf { removeOrder(getKitchenOrderDetailList().sortedByDescending { it.timeStamp }[0].id) }
+                            }
+                        }
+                        "frozen" -> {
+                            shelves[Shelves.SHELF_FROZEN]?.run {
+                                removeExpiredOrderFromSingleShelf { removeOrder(getKitchenOrderDetailList().sortedByDescending { it.timeStamp }[0].id) }
+                            }
+                        }
+                    }
+                }
+
+                override fun onError(e: Throwable) {
+                    printLog(e.toString())
+                }
+
+            })
+    }
+
     fun initiateOrderAging(): Disposable {
         val start = System.currentTimeMillis()
         return service.getOrderHeartbeat()
@@ -183,7 +243,9 @@ class ShelfManager(private val service: FoodOrderService) {
                             taggedOrder = Shelves.SHELF_HOT
                             shelves[Shelves.SHELF_HOT]?.let { shelf ->
                                 if (shelf.getOrdersCount() >= Constants.MAX_HOT_SHELF_CAPACITY) {
-                                    processExcessOrder({ shelves[Shelves.SHELF_HOT]?.removeOrder() }, Shelves.SHELF_HOT)
+                                    removeExpiredOrdersFromSingleShelf(
+                                        { shelves[Shelves.SHELF_HOT]?.removeOrder() }
+                                    )
                                 } else {
                                     shelves[Shelves.SHELF_HOT]?.addOrder(
                                         KitchenOrderDetail(
@@ -204,10 +266,9 @@ class ShelfManager(private val service: FoodOrderService) {
                         "cold" -> {
                             taggedOrder = Shelves.SHELF_COLD
                             shelves[Shelves.SHELF_COLD]?.let { shelf ->
-                                if (shelf.getOrdersCount() >= Constants.MAX_HOT_SHELF_CAPACITY) {
-                                    processExcessOrder(
-                                        { shelves[Shelves.SHELF_COLD]?.removeOrder() },
-                                        Shelves.SHELF_COLD
+                                if (shelf.getOrdersCount() >= Constants.MAX_COLD_SHELF_CAPCITY) {
+                                    removeExpiredOrdersFromSingleShelf(
+                                        { shelves[Shelves.SHELF_COLD]?.removeOrder() }
                                     )
                                 } else
                                     shelves[Shelves.SHELF_COLD]?.addOrder(
@@ -229,9 +290,8 @@ class ShelfManager(private val service: FoodOrderService) {
                             taggedOrder = Shelves.SHELF_FROZEN
                             shelves[Shelves.SHELF_FROZEN]?.let { shelf ->
                                 if (shelf.getOrdersCount() >= Constants.MAX_FROZEN_SHELF_CAPCITY) {
-                                    processExcessOrder(
-                                        { shelves[Shelves.SHELF_FROZEN]?.removeOrder() },
-                                        Shelves.SHELF_FROZEN
+                                    removeExpiredOrdersFromSingleShelf(
+                                        { shelves[Shelves.SHELF_FROZEN]?.removeOrder() }
                                     )
                                 } else
                                     shelves[Shelves.SHELF_FROZEN]?.addOrder(

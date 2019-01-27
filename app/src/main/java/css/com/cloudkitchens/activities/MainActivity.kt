@@ -87,11 +87,11 @@ class MainActivity : AppCompatActivity(), ServiceConnection {
                                     val adapter:RecyclerViewAdapterInterface =  recyclerViewFrozen.adapter as RecyclerViewAdapterInterface
                                     adapter.update(orders.shelfStatus)
                                 }
-                                "overflow" -> {
-                                    val adapter:RecyclerViewAdapterInterface =  recyclerViewOverFlow.adapter as RecyclerViewAdapterInterface
-                                    adapter.update(orders.shelfStatus)
-                                }
                                 else -> printLog("unknown temperature: ${orders.orderSelector}")
+                            }
+                            if (orders.overFlow.isNotEmpty()){
+                                val adapter:RecyclerViewAdapterInterface =  recyclerViewOverFlow.adapter as RecyclerViewAdapterInterface
+                                adapter.update(orders.shelfStatus)
                             }
                         }
 
@@ -117,7 +117,10 @@ class MainActivity : AppCompatActivity(), ServiceConnection {
         kitchenService = serviceBinder.getService()
         kitchenService?.let { service ->
             shelfManager = ShelfManager(service)
-            shelfManager?.initiateOrderAging()
+            shelfManager?.run {
+                disposables.add(initiateOrderAging())
+                disposables.add(initiateDeliveries())
+            }
             monitorOrderCount()
         }
     }
