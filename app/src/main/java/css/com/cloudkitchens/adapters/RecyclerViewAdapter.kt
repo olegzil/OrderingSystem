@@ -22,10 +22,11 @@ class RecyclerViewAdapter : RecyclerViewAdapterInterface, RecyclerView.Adapter<R
 
             name.text = itemDetail.name
             temp.text = itemDetail.temp
-            maxLife.text = "".format("%2.3d", itemDetail.shelfLife)
-            decayRate.text = "".format("%2.3d", itemDetail.decayRate)
-            normalizedLife.text = "".format("%2.3d", itemDetail.normalizedShelfLife)
-            remainingLife.text = "".format("%2.3d", itemDetail.orderRemainingLife)
+            maxLife.text = itemDetail.shelfLife.toString()
+            val str=String.format("%.3f", itemDetail.decayRate)
+            decayRate.text = str
+            normalizedLife.text = String.format("%.3f", itemDetail.normalizedShelfLife)
+            remainingLife.text = String.format("%.3f", itemDetail.orderRemainingLife)
         }
     }
 

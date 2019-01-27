@@ -160,7 +160,7 @@ class ShelfManager(private val service: FoodOrderService) {
         }
         val overflowOrders = mutableListOf<KitchenOrderDetail>()
         shelves[Shelves.SHELF_OVERFLOW]?.let {
-            orders.addAll(it.getKitchenOrderDetailList().toMutableList()) //same here
+            overflowOrders.addAll(it.getKitchenOrderDetailList().toMutableList()) //same here
         }
         return Pair(orders, overflowOrders)
     }
