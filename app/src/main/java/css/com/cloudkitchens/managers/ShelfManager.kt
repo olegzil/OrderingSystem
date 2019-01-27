@@ -39,20 +39,6 @@ class ShelfManager(private val service: FoodOrderService) {
         shelves[Shelves.SHELF_OVERFLOW] = ShelfOverflow()
     }
 
-    private fun processExcessOrder(predicateRemove: () -> List<KitchenOrderDetail>?, shelfSelector: Shelves) {
-        shelves[shelfSelector]?.getOrdersCount()?.let { count ->
-            if (count < MAX_OVERFLOW_SHELF_CAPACITY) {
-                predicateRemove()?.let { orderList ->
-                    orderList.forEach { order ->
-                        shelves[shelfSelector]?.addOrder(order)
-                    }
-                }
-            } else {
-                shelves[shelfSelector]?.removeOrder()
-            }
-        }
-    }
-
     private fun expiredOrderRemoveHelper(order: KitchenOrderDetail) {
         shelves[Shelves.SHELF_OVERFLOW]?.run {
             if (getOrdersCount() == MAX_OVERFLOW_SHELF_CAPACITY)

@@ -47,7 +47,7 @@ class FoodOrderService : Service(), KitchenOrderNotification {
             orderGenerator()
         }
         driverThread = DispatchingThread {
-
+            driverGenerator()
         }
     }
 
@@ -151,7 +151,7 @@ class FoodOrderService : Service(), KitchenOrderNotification {
     }
 
     /**
-     * Generate a randome value between 2 and 8. Sleep for that many milliseconds
+     * Generate a random value between 2 and 8. Sleep for that many milliseconds
      * Once awaken, notify the listener of a random order pickup
      */
     private fun driverGenerator() {
