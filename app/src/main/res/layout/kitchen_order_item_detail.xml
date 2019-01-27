@@ -6,7 +6,7 @@
         android:layout_height="fill_parent"
         android:layout_marginTop="8dp"
         android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp" android:id="@+id/kitch_detail_card_id">
+        android:layout_marginEnd="8dp">
 
     <android.support.constraint.ConstraintLayout
             android:layout_width="wrap_content"
@@ -41,7 +41,7 @@
                 android:text="@string/order_remaining_life"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/title_remianing_life"
+                android:id="@+id/title_remaining_life_id"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/title_shelf_max_life_id"
                 app:layout_constraintStart_toStartOf="parent"
@@ -55,16 +55,15 @@
                 android:paddingStart="8dp"
                 android:paddingEnd="8dp"
                 app:layout_constraintTop_toBottomOf="@+id/title_temp_id"
-                app:layout_constraintBottom_toTopOf="@+id/title_remianing_life"
-                app:layout_constraintStart_toStartOf="@+id/title_remianing_life"
+                app:layout_constraintBottom_toTopOf="@+id/title_remaining_life_id"
+                app:layout_constraintStart_toStartOf="@+id/title_remaining_life_id"
                 app:layout_constraintEnd_toStartOf="@+id/order_max_shelf_life_id"
-                app:layout_constraintEnd_toEndOf="@+id/title_remianing_life"/>
+                app:layout_constraintEnd_toEndOf="@+id/title_remaining_life_id"/>
         <TextView
                 android:id="@+id/title_decay_rate_id"
                 android:text="@string/order_decay_rate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:minWidth="wrap_conent"
                 android:paddingStart="8dp"
                 android:paddingEnd="8dp"
                 app:layout_constraintTop_toBottomOf="@+id/title_normalized_life_id"
@@ -130,7 +129,7 @@
                 android:paddingEnd="8dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/order_max_shelf_life_id"
-                app:layout_constraintStart_toEndOf="@+id/title_remianing_life" android:layout_marginStart="59dp"
+                app:layout_constraintStart_toEndOf="@+id/title_remaining_life_id" android:layout_marginStart="59dp"
                 app:layout_constraintEnd_toEndOf="parent" android:layout_marginEnd="26dp"/>
         <TextView
                 android:id="@+id/order_name_id"

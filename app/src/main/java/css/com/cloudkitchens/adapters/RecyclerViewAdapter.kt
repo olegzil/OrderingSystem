@@ -1,6 +1,5 @@
 package css.com.cloudkitchens.adapters
 
-import android.support.v7.widget.CardView
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
@@ -8,31 +7,39 @@ import android.view.ViewGroup
 import android.widget.TextView
 import css.com.cloudkitchens.R
 import css.com.cloudkitchens.dataproviders.KitchenOrderDetail
+import css.com.cloudkitchens.interfaces.RecyclerViewAdapterInterface
 
-class RecyclerViewAdapter : RecyclerView.Adapter<RecyclerViewAdapter.ImageHolder>(){
+class RecyclerViewAdapter : RecyclerViewAdapterInterface, RecyclerView.Adapter<RecyclerViewAdapter.CardViewHolder>(){
     private val itemList = ArrayList<KitchenOrderDetail>()
-    inner class ImageHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    inner class CardViewHolder(holder: View) : RecyclerView.ViewHolder(holder) {
         fun bind(itemDetail: KitchenOrderDetail, pos: Int) {
-            val cardView = itemView.findViewById<CardView>(R.id.kitch_detail_card_id)
-            cardView.findViewById<TextView>(R.id.title_name_id)
-            cardView.findViewById<TextView>(R.id.title_temp_id)
-            cardView.findViewById<TextView>(R.id.title_shelf_max_life_id)
-            cardView.findViewById<TextView>(R.id.title_decay_rate_id)
-            cardView.findViewById<TextView>(R.id.title_normalized_life_id)
+            val name = itemView.findViewById<TextView>(R.id.order_name_id)
+            val temp = itemView.findViewById<TextView>(R.id.order_temperture)
+            val maxLife = itemView.findViewById<TextView>(R.id.order_shelf_life)
+            val decayRate = itemView.findViewById<TextView>(R.id.order_decay_rate)
+            val normalizedLife =itemView.findViewById<TextView>(R.id.order_normalized_life)
+            val remainingLife = itemView.findViewById<TextView>(R.id.order_life_remaining)
+
+            name.text = itemDetail.name
+            temp.text = itemDetail.temp
+            maxLife.text = "".format("%2.3d", itemDetail.shelfLife)
+            decayRate.text = "".format("%2.3d", itemDetail.decayRate)
+            normalizedLife.text = "".format("%2.3d", itemDetail.normalizedShelfLife)
+            remainingLife.text = "".format("%2.3d", itemDetail.orderRemainingLife)
         }
     }
 
     override fun onDetachedFromRecyclerView(recyclerView: RecyclerView) {
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerViewAdapter.ImageHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerViewAdapter.CardViewHolder {
         val itemView = LayoutInflater.from(parent.context)
             .inflate(R.layout.kitchen_order_item_detail, parent, false)
 
-        return RecyclerViewAdapter().ImageHolder(itemView)
+        return RecyclerViewAdapter().CardViewHolder(itemView)
     }
 
-    override fun onBindViewHolder(holder: RecyclerViewAdapter.ImageHolder, position: Int) {
+    override fun onBindViewHolder(holder: RecyclerViewAdapter.CardViewHolder, position: Int) {
         holder.bind(itemList[position], position)
     }
 
@@ -40,8 +47,19 @@ class RecyclerViewAdapter : RecyclerView.Adapter<RecyclerViewAdapter.ImageHolder
         return itemList.size
     }
 
-    fun update(newItems: List<KitchenOrderDetail>) {
-        scrollHelper.update(newItems)
+    override fun addOrder(order:KitchenOrderDetail){
+        itemList.add(order)
+        notifyItemInserted(itemList.size-1)
+    }
+    override fun removeOrder(order:KitchenOrderDetail){
+        itemList.find { order.id == it.id }?.let {
+            itemList.remove(it)
+        }
+        notifyDataSetChanged()
+    }
+    override fun update(newItems: List<KitchenOrderDetail>) {
+        itemList.clear()
+        itemList.addAll(newItems)
         notifyDataSetChanged()
     }
 }

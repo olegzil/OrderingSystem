@@ -97,6 +97,15 @@ abstract class BaseShelf : ShelfInterface {
         }
         return orders
     }
+    @Synchronized
+    override fun getKitchenOrderDetailList():List<KitchenOrderDetail>{
+        val orders = mutableListOf<KitchenOrderDetail>()
+        orderList.forEach{
+            orders.add(it.value.getOrder().copy())
+        }
+        return orders
+    }
+
 
     override fun setDecayRateMultiplier(multiplier: Double) {
         orderList.forEach {

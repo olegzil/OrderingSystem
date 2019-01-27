@@ -6,6 +6,7 @@ interface ShelfInterface {
     fun getOrdersCount():Int
     fun getOldestOrder():KitchenOrderDetail?
     fun getNewestOrder():KitchenOrderDetail?
+    fun getKitchenOrderDetailList():List<KitchenOrderDetail>
     fun removeOrder(id:String): KitchenOrderDetail?
     fun removeOrder() : List<KitchenOrderDetail>
     fun addOrder(orderDetail:KitchenOrderDetail)

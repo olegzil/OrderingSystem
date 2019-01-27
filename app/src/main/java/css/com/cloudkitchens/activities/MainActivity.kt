@@ -11,7 +11,9 @@ import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.view.Menu
 import android.view.MenuItem
+import css.com.cloudkitchens.adapters.RecyclerViewAdapter
 import css.com.cloudkitchens.dataproviders.KitchenOrderShelfStatus
+import css.com.cloudkitchens.interfaces.RecyclerViewAdapterInterface
 import css.com.cloudkitchens.managers.ShelfManager
 import css.com.cloudkitchens.services.FoodOrderService
 import css.com.cloudkitchens.utilities.printLog
@@ -27,10 +29,10 @@ class MainActivity : AppCompatActivity(), ServiceConnection {
     private val disposables = CompositeDisposable()
     private var kitchenService: FoodOrderService? = null
     private var shelfManager: ShelfManager? = null
-    private lateinit var recyclerViewHot:RecyclerView
-    private lateinit var recyclerViewCold:RecyclerView
-    private lateinit var recyclerViewFrozen:RecyclerView
-    private lateinit var recyclerViewOverFlow:RecyclerView
+    private lateinit var recyclerViewHot: RecyclerView
+    private lateinit var recyclerViewCold: RecyclerView
+    private lateinit var recyclerViewFrozen: RecyclerView
+    private lateinit var recyclerViewOverFlow: RecyclerView
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(css.com.cloudkitchens.R.layout.activity_main)
@@ -40,16 +42,23 @@ class MainActivity : AppCompatActivity(), ServiceConnection {
         applicationContext.startService(service)
     }
 
-    private fun initializeRecyclerViews(){
+    private fun initializeRecyclerViews() {
         recyclerViewHot = recycler_hot_list
         recyclerViewCold = recycler_cold_list
         recyclerViewFrozen = recycler_frozen_list
         recyclerViewOverFlow = recycler_overflow_list
 
+        recyclerViewHot.adapter = RecyclerViewAdapter()
+        recyclerViewCold.adapter = RecyclerViewAdapter()
+        recyclerViewFrozen.adapter = RecyclerViewAdapter()
+        recyclerViewOverFlow.adapter = RecyclerViewAdapter()
+
         recyclerViewHot.layoutManager = LinearLayoutManager(applicationContext, LinearLayoutManager.HORIZONTAL, false)
         recyclerViewCold.layoutManager = LinearLayoutManager(applicationContext, LinearLayoutManager.HORIZONTAL, false)
-        recyclerViewFrozen.layoutManager = LinearLayoutManager(applicationContext, LinearLayoutManager.HORIZONTAL, false)
-        recyclerViewOverFlow.layoutManager = LinearLayoutManager(applicationContext, LinearLayoutManager.HORIZONTAL, false)
+        recyclerViewFrozen.layoutManager =
+            LinearLayoutManager(applicationContext, LinearLayoutManager.HORIZONTAL, false)
+        recyclerViewOverFlow.layoutManager =
+            LinearLayoutManager(applicationContext, LinearLayoutManager.HORIZONTAL, false)
 
     }
 
@@ -64,14 +73,25 @@ class MainActivity : AppCompatActivity(), ServiceConnection {
                         }
 
                         override fun onNext(orders: KitchenOrderShelfStatus) {
-                            orders.shelfStatus.forEach { order ->
-                                when (order.first) {
-                                    "hot" -> count_hot.text = order.second.toString()
-                                    "cold" -> count_cold.text = order.second.toString()
-                                    "frozen" -> count_frozen.text = order.second.toString()
-                                    "overflow" -> count_overflow.text = order.second.toString()
-                                    else -> printLog("unknown temperature: ${order.first}")
+                            when (orders.orderSelector) {
+                                "hot" -> {
+                                    val adapter:RecyclerViewAdapterInterface =  recyclerViewHot.adapter as RecyclerViewAdapterInterface
+                                    adapter.update(orders.shelfStatus)
                                 }
+
+                                "cold" -> {
+                                    val adapter:RecyclerViewAdapterInterface =  recyclerViewCold.adapter as RecyclerViewAdapterInterface
+                                    adapter.update(orders.shelfStatus)
+                                }
+                                "frozen" -> {
+                                    val adapter:RecyclerViewAdapterInterface =  recyclerViewFrozen.adapter as RecyclerViewAdapterInterface
+                                    adapter.update(orders.shelfStatus)
+                                }
+                                "overflow" -> {
+                                    val adapter:RecyclerViewAdapterInterface =  recyclerViewOverFlow.adapter as RecyclerViewAdapterInterface
+                                    adapter.update(orders.shelfStatus)
+                                }
+                                else -> printLog("unknown temperature: ${orders.orderSelector}")
                             }
                         }
 

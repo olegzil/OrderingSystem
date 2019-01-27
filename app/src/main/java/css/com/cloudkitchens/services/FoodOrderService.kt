@@ -5,8 +5,7 @@ import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
 import css.com.cloudkitchens.constants.Constants.POISSON_LAMBDA
-import css.com.cloudkitchens.dataproviders.KitchenOrderDetail
-import css.com.cloudkitchens.dataproviders.KitchenOrderMetadata
+import css.com.cloudkitchens.dataproviders.KitchenOrderServerDetail
 import css.com.cloudkitchens.interfaces.KitchenOrderNotification
 import css.com.cloudkitchens.utilities.printLog
 import io.reactivex.Observable
@@ -28,7 +27,7 @@ import java.util.concurrent.TimeUnit
 class FoodOrderService : Service(), KitchenOrderNotification {
     private var kitchenOrders: JSONArray? = null
     private val binder = OrderSourceBinder()
-    private var orderNotification: PublishSubject<KitchenOrderMetadata>? = null
+    private var orderNotification: PublishSubject<KitchenOrderServerDetail>? = null
     private var continueRunning = true
     private var request: Job? = null
     private var orderThread: OrderThread
@@ -93,11 +92,11 @@ class FoodOrderService : Service(), KitchenOrderNotification {
      * This method returns an [Observable] that emits a random kitchen orderDetail based on a Poisson distribution with a specified lambda.
      * The distribution value determines the rate of emision
      * */
-    private fun getKitchenOrder(): KitchenOrderDetail? {
+    private fun getKitchenOrder(): KitchenOrderServerDetail? {
         kitchenOrders?.let { orderArray ->
             val index = ThreadLocalRandom.current().nextInt(0, orderArray.length())
             val retVal = orderArray.getJSONObject(index)
-            return KitchenOrderDetail(
+            return KitchenOrderServerDetail(
                 UUID.randomUUID().toString(),
                 retVal.getString("name"),
                 retVal.getString("temp"),
@@ -146,7 +145,7 @@ class FoodOrderService : Service(), KitchenOrderNotification {
     /**
      * This method generates random kitchen orders.
      * The thread is interruptable. If the [continueRunning] flag is set to false the while loop will terminate
-     * A publish/subscriber notification method is used to send out notifications of type KitchenOrderDetail
+     * A publish/subscriber notification method is used to send out notifications of type KitchenOrderServerDetail
      */
     private fun orderGenerator() {
         debugTime = System.currentTimeMillis()
@@ -159,7 +158,7 @@ class FoodOrderService : Service(), KitchenOrderNotification {
                 accumulatedTime += sleepTime
                 sampleCount += 1
                 orderNotification?.run {
-                    onNext(KitchenOrderMetadata(it, sleepTime, accumulatedTime/sampleCount))
+                    onNext(it)
                 }
             }
             sleep(sleepTime.toLong()*1000)
