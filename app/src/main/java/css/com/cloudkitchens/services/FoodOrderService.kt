@@ -11,11 +11,10 @@ import css.com.cloudkitchens.interfaces.KitchenOrderNotification
 import css.com.cloudkitchens.utilities.printLog
 import io.reactivex.Observable
 import io.reactivex.subjects.PublishSubject
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.*
 import org.json.JSONArray
 import java.io.InputStream
 import java.lang.Math.random
-import java.lang.Thread.sleep
 import java.nio.charset.Charset
 import java.util.*
 import java.util.concurrent.ThreadLocalRandom
@@ -32,35 +31,55 @@ class FoodOrderService : Service(), KitchenOrderNotification {
     private var driverArivalNotification = PublishSubject.create<String>()
     private var continueRunning = true
     private var request: Job? = null
-    private var dispatchingThread: DispatchingThread
-    private var driverThread: DispatchingThread
     private var debugTime = 0L
     private var sampleCount = 1.0
     private var accumulatedTime = 0.0
+    private lateinit var coroutineScopeCancelation: Job
 
     init {
         if (kitchenOrders == null)
             kitchenOrders = readKitchenOrders("orders.json")
         if (orderNotification == null)
             orderNotification = PublishSubject.create()
-        dispatchingThread = DispatchingThread {
-            orderGenerator()
-        }
-        driverThread = DispatchingThread {
-            driverGenerator()
-        }
-    }
-
-    internal class DispatchingThread(private var predicate: () -> Unit) : Thread() {
-        override fun run() {
-            predicate()
-        }
+        coroutineRestart()
     }
 
     inner class OrderSourceBinder : Binder() {
         fun getService(): FoodOrderService {
             return this@FoodOrderService
         }
+    }
+
+    private fun coroutineRestart() {
+        var async1Result: Deferred<Unit>? = null
+        var async2Result: Deferred<Unit>? = null
+        var driverLoop = true
+        var orderLoop = true
+        coroutineScopeCancelation = GlobalScope.launch {
+            while (isActive) {
+
+                if (driverLoop) {
+                    driverLoop = false
+                    async1Result = async {
+                        val timeToDelayDriver = driverGenerator()
+                        printLog("next driver ariving in ${timeToDelayDriver / 1000} seconds ")
+                        delay(timeToDelayDriver)
+                        driverLoop = true
+                    }
+                }
+                if (orderLoop) {
+                    orderLoop = false
+                    async2Result = async {
+                        val timeToDelayOrder = orderGenerator()
+                        delay(timeToDelayOrder)
+                        orderLoop = true
+                    }
+                }
+            }
+            async1Result?.cancel()
+            async2Result?.cancel()
+        }
+
     }
 
     /**
@@ -117,10 +136,8 @@ class FoodOrderService : Service(), KitchenOrderNotification {
     override fun onRebind(intent: Intent?) {
         continueRunning = true
         printLog("from Service.onBind")
-        if (!dispatchingThread.isAlive)
-            dispatchingThread.start()
-        if (!driverThread.isAlive)
-            driverThread.start()
+        coroutineScopeCancelation.cancel()
+        coroutineRestart()
         super.onRebind(intent)
     }
 
@@ -131,6 +148,7 @@ class FoodOrderService : Service(), KitchenOrderNotification {
 
     override fun onUnbind(intent: Intent?): Boolean {
         continueRunning = false
+        coroutineScopeCancelation.cancel()
         request?.cancel()
         stopSelf()
         return super.onUnbind(intent)
@@ -140,10 +158,8 @@ class FoodOrderService : Service(), KitchenOrderNotification {
         continueRunning = true
         printLog("from Service.onBind")
         kitchenOrders = readKitchenOrders("orders.json")
-        if (!dispatchingThread.isAlive)
-            dispatchingThread.start()
-        if (!driverThread.isAlive)
-            driverThread.start()
+        coroutineScopeCancelation.cancel()
+        coroutineRestart()
         return binder
     }
 
@@ -158,17 +174,15 @@ class FoodOrderService : Service(), KitchenOrderNotification {
      * Generate a random value between 2 and 8. Sleep for that many milliseconds
      * Once awaken, notify the listener of a random order pickup
      */
-    private fun driverGenerator() {
+    private fun driverGenerator(): Long {
         debugTime = System.currentTimeMillis()
-        while (continueRunning) {
-            val timeOfDirverAriaval = ThreadLocalRandom.current().nextInt(2, 9).toLong()
-            sleep(timeOfDirverAriaval * 1000)
-            printLog("time before next driver arival: $timeOfDirverAriaval")
-            getKitchenOrder()?.let {
-                driverArivalNotification.onNext(it.temp)
+        val timeOfDirverAriaval = ThreadLocalRandom.current().nextInt(2, 9).toLong()
+        printLog("time before next driver arrival: $timeOfDirverAriaval")
+        getKitchenOrder()?.let {
+            driverArivalNotification.onNext(it.temp)
 
-            }
         }
+        return timeOfDirverAriaval * 1000
     }
 
     /**
@@ -176,21 +190,19 @@ class FoodOrderService : Service(), KitchenOrderNotification {
      * The thread is interruptable. If the [continueRunning] flag is set to false the while loop will terminate
      * A publish/subscriber notification method is used to send out notifications of type KitchenOrderServerDetail
      */
-    private fun orderGenerator() {
+    private fun orderGenerator(): Long {
         debugTime = System.currentTimeMillis()
-        while (continueRunning) {
-            val sleepTime = sampleTime(POISSON_LAMBDA)
-            val time1 = "%.2f".format(sleepTime)
-            val time2 = "%.2f".format(accumulatedTime / sampleCount)
-            printLog("time before next orderDetail: $time1 average orderDetail time $time2")
-            getKitchenOrder()?.let {
-                accumulatedTime += sleepTime
-                sampleCount += 1
-                orderNotification?.run {
-                    onNext(it)
-                }
+        val sleepTime = sampleTime(POISSON_LAMBDA)
+        val time1 = "%.2f".format(sleepTime)
+        val time2 = "%.2f".format(accumulatedTime / sampleCount)
+        printLog("time before next orderDetail: $time1 average orderDetail time $time2")
+        getKitchenOrder()?.let {
+            accumulatedTime += sleepTime
+            sampleCount += 1
+            orderNotification?.run {
+                onNext(it)
             }
-            sleep(sleepTime.toLong() * 1000)
         }
+        return sleepTime.toLong() * 1000
     }
 }

@@ -23,7 +23,6 @@ import io.reactivex.observers.DisposableObserver
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_main_view.*
-import kotlinx.coroutines.*
 
 /**
  * The one and only main activity. The activity consists of three recycler views with their respective detail items
@@ -82,22 +81,26 @@ class MainActivity : AppCompatActivity(), ServiceConnection {
                         override fun onNext(orders: KitchenOrderShelfStatus) {
                             when (orders.orderSelector) {
                                 "hot" -> {
-                                    val adapter:RecyclerViewAdapterInterface =  recyclerViewHot.adapter as RecyclerViewAdapterInterface
+                                    val adapter: RecyclerViewAdapterInterface =
+                                        recyclerViewHot.adapter as RecyclerViewAdapterInterface
                                     adapter.update(orders.shelfStatus)
                                 }
 
                                 "cold" -> {
-                                    val adapter:RecyclerViewAdapterInterface =  recyclerViewCold.adapter as RecyclerViewAdapterInterface
+                                    val adapter: RecyclerViewAdapterInterface =
+                                        recyclerViewCold.adapter as RecyclerViewAdapterInterface
                                     adapter.update(orders.shelfStatus)
                                 }
                                 "frozen" -> {
-                                    val adapter:RecyclerViewAdapterInterface =  recyclerViewFrozen.adapter as RecyclerViewAdapterInterface
+                                    val adapter: RecyclerViewAdapterInterface =
+                                        recyclerViewFrozen.adapter as RecyclerViewAdapterInterface
                                     adapter.update(orders.shelfStatus)
                                 }
                                 else -> printLog("unknown temperature: ${orders.orderSelector}")
                             }
-                            if (orders.overFlow.isNotEmpty()){
-                                val adapter:RecyclerViewAdapterInterface =  recyclerViewOverFlow.adapter as RecyclerViewAdapterInterface
+                            if (orders.overFlow.isNotEmpty()) {
+                                val adapter: RecyclerViewAdapterInterface =
+                                    recyclerViewOverFlow.adapter as RecyclerViewAdapterInterface
                                 adapter.update(orders.shelfStatus)
                             }
                         }
