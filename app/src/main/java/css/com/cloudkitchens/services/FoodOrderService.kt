@@ -35,7 +35,7 @@ class FoodOrderService : Service(), KitchenOrderNotification {
     private var dispatchingThread: DispatchingThread
     private var driverThread: DispatchingThread
     private var debugTime = 0L
-    private var sampleCount = 0.0
+    private var sampleCount = 1.0
     private var accumulatedTime = 0.0
 
     init {

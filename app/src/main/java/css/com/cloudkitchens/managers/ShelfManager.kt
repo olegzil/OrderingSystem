@@ -186,17 +186,22 @@ class ShelfManager(private val service: FoodOrderService) {
                     when (selector) {
                         "hot" -> {
                             shelves[Shelves.SHELF_HOT]?.run {
-                                removeExpiredOrderFromSingleShelf { removeOrder(getKitchenOrderDetailList().sortedByDescending { it.timeStamp }[0].id) }
+                                if (getKitchenOrderDetailList().isNotEmpty())
+                                    removeExpiredOrderFromSingleShelf {
+                                        removeOrder(getKitchenOrderDetailList().sortedByDescending { it.timeStamp }[0].id)
+                                    }
                             }
                         }
                         "cold" -> {
                             shelves[Shelves.SHELF_COLD]?.run {
-                                removeExpiredOrderFromSingleShelf { removeOrder(getKitchenOrderDetailList().sortedByDescending { it.timeStamp }[0].id) }
+                                if (getKitchenOrderDetailList().isNotEmpty())
+                                    removeExpiredOrderFromSingleShelf { removeOrder(getKitchenOrderDetailList().sortedByDescending { it.timeStamp }[0].id) }
                             }
                         }
                         "frozen" -> {
                             shelves[Shelves.SHELF_FROZEN]?.run {
-                                removeExpiredOrderFromSingleShelf { removeOrder(getKitchenOrderDetailList().sortedByDescending { it.timeStamp }[0].id) }
+                                if (getKitchenOrderDetailList().isNotEmpty())
+                                    removeExpiredOrderFromSingleShelf { removeOrder(getKitchenOrderDetailList().sortedByDescending { it.timeStamp }[0].id) }
                             }
                         }
                     }
@@ -229,7 +234,7 @@ class ShelfManager(private val service: FoodOrderService) {
                     shelves[Shelves.SHELF_OVERFLOW]?.ageOrder(AGING_DELTAL)
                     removeExpiredOrders()
                     moveOrdersFromOverflow()
-                    printLog("order hart beat ${System.currentTimeMillis() - start}")
+//                    printLog("order hart beat ${System.currentTimeMillis() - start}")
                 }
 
                 override fun onError(e: Throwable) {
