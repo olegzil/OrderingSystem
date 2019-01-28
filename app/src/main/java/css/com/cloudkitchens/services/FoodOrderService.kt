@@ -34,7 +34,8 @@ class FoodOrderService : Service(), KitchenOrderNotification {
     private var debugTime = 0L
     private var sampleCount = 1.0
     private var accumulatedTime = 0.0
-    private lateinit var coroutineScopeCancelation: Job
+    private lateinit var coroutineOrderCancelation: Job
+    private lateinit var coroutineDriverCancelation: Job
 
     init {
         if (kitchenOrders == null)
@@ -51,35 +52,23 @@ class FoodOrderService : Service(), KitchenOrderNotification {
     }
 
     private fun coroutineRestart() {
-        var async1Result: Deferred<Unit>? = null
-        var async2Result: Deferred<Unit>? = null
-        var driverLoop = true
-        var orderLoop = true
-        coroutineScopeCancelation = GlobalScope.launch {
+        coroutineOrderCancelation = GlobalScope.launch {
             while (isActive) {
-
-                if (driverLoop) {
-                    driverLoop = false
-                    async1Result = async {
-                        val timeToDelayDriver = driverGenerator()
-                        printLog("next driver ariving in ${timeToDelayDriver / 1000} seconds ")
-                        delay(timeToDelayDriver)
-                        driverLoop = true
-                    }
+                val asyncResult = async {
+                    delay(orderGenerator())
                 }
-                if (orderLoop) {
-                    orderLoop = false
-                    async2Result = async {
-                        val timeToDelayOrder = orderGenerator()
-                        delay(timeToDelayOrder)
-                        orderLoop = true
-                    }
-                }
+                asyncResult.await()
             }
-            async1Result?.cancel()
-            async2Result?.cancel()
         }
 
+        coroutineDriverCancelation = GlobalScope.launch {
+            while (isActive) {
+                val asyncResult = async {
+                    delay(driverGenerator())
+                }
+                asyncResult.await()
+            }
+        }
     }
 
     /**
@@ -136,7 +125,8 @@ class FoodOrderService : Service(), KitchenOrderNotification {
     override fun onRebind(intent: Intent?) {
         continueRunning = true
         printLog("from Service.onBind")
-        coroutineScopeCancelation.cancel()
+        coroutineOrderCancelation.cancel()
+        coroutineDriverCancelation.cancel()
         coroutineRestart()
         super.onRebind(intent)
     }
@@ -148,7 +138,8 @@ class FoodOrderService : Service(), KitchenOrderNotification {
 
     override fun onUnbind(intent: Intent?): Boolean {
         continueRunning = false
-        coroutineScopeCancelation.cancel()
+        coroutineOrderCancelation.cancel()
+        coroutineDriverCancelation.cancel()
         request?.cancel()
         stopSelf()
         return super.onUnbind(intent)
@@ -158,7 +149,8 @@ class FoodOrderService : Service(), KitchenOrderNotification {
         continueRunning = true
         printLog("from Service.onBind")
         kitchenOrders = readKitchenOrders("orders.json")
-        coroutineScopeCancelation.cancel()
+        coroutineOrderCancelation.cancel()
+        coroutineDriverCancelation.cancel()
         coroutineRestart()
         return binder
     }
