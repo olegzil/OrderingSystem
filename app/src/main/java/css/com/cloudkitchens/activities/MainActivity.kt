@@ -104,7 +104,7 @@ class MainActivity : AppCompatActivity(), ServiceConnection {
                             recyclerViewOverFlow.adapter as RecyclerViewAdapterInterface
                         adapter.update(orders.overFlow)
                         findViewById<TextView>(R.id.count_overflow_id)?.let { count->
-                            count.text = orders.shelfStatus.size.toString()
+                            count.text = orders.overFlow.size.toString()
                         }
                     }
                 }
