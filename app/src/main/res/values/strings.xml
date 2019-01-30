@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">CSS</string>
+    <string name="action_settings">Settings</string>
+    <string name="shelf_hot">Hot</string>
+    <string name="shelf_cold">Cold</string>
+    <string name="shelf_frozen">Frozen</string>
+    <string name="shelf_overflow">Overflow</string>
+    <string name="order_name">Name</string>
+    <string name="order_temp">Temperature</string>
+    <string name="order_shelf_life">Shelf life</string>
+    <string name="order_decay_rate">Decay</string>
+    <string name="order_normalized">Normalized life</string>
+    <string name="order_remaining_life">Life remaining</string>
+    <string name="hot_text_item_count">0</string>
+    <string name="shelf_average_time">0</string>
+</resources>
