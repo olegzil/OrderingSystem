@@ -117,7 +117,6 @@ class ShelfManager(private val service: FoodOrderService) : ShelfManagerInterfac
         val coldOrders = shelves[Shelves.SHELF_COLD]?.removeOrder()
         val frozenOrders = shelves[Shelves.SHELF_FROZEN]?.removeOrder()
         shelves[Shelves.SHELF_OVERFLOW]?.removeOrder() //Once removed, overflow orders are considered waste
-
         //If there is space on the overflow shelf, move the expired orders there
         shelves[Shelves.SHELF_OVERFLOW]?.run {
             if (getOrdersCount() < MAX_OVERFLOW_SHELF_CAPACITY) {

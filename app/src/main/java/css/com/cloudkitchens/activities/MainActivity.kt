@@ -11,6 +11,8 @@ import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.TextView
+import css.com.cloudkitchens.R
 import css.com.cloudkitchens.adapters.RecyclerViewAdapter
 import css.com.cloudkitchens.interfaces.RecyclerViewAdapterInterface
 import css.com.cloudkitchens.managers.ShelfManager
@@ -74,24 +76,36 @@ class MainActivity : AppCompatActivity(), ServiceConnection {
                             val adapter: RecyclerViewAdapterInterface =
                                 recyclerViewHot.adapter as RecyclerViewAdapterInterface
                             adapter.update(orders.shelfStatus)
+                            findViewById<TextView>(R.id.count_hot_id)?.let { count->
+                                count.text = orders.shelfStatus.size.toString()
+                            }
                         }
 
                         "cold" -> {
                             val adapter: RecyclerViewAdapterInterface =
                                 recyclerViewCold.adapter as RecyclerViewAdapterInterface
                             adapter.update(orders.shelfStatus)
+                            findViewById<TextView>(R.id.count_cold_id)?.let {count->
+                                count.text = orders.shelfStatus.size.toString()
+                            }
                         }
                         "frozen" -> {
                             val adapter: RecyclerViewAdapterInterface =
                                 recyclerViewFrozen.adapter as RecyclerViewAdapterInterface
                             adapter.update(orders.shelfStatus)
+                            findViewById<TextView>(R.id.count_frozen_id)?.let {count->
+                                count.text = orders.shelfStatus.size.toString()
+                            }
                         }
                         else -> printLog("unknown temperature: ${orders.orderSelector}")
                     }
                     if (orders.overFlow.isNotEmpty()) {
                         val adapter: RecyclerViewAdapterInterface =
                             recyclerViewOverFlow.adapter as RecyclerViewAdapterInterface
-                        adapter.update(orders.shelfStatus)
+                        adapter.update(orders.overFlow)
+                        findViewById<TextView>(R.id.count_overflow_id)?.let { count->
+                            count.text = orders.shelfStatus.size.toString()
+                        }
                     }
                 }
             })
