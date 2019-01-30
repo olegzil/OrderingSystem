@@ -62,10 +62,45 @@ class MainActivity : AppCompatActivity(), ServiceConnection {
             LinearLayoutManager(applicationContext, LinearLayoutManager.HORIZONTAL, false)
 
     }
-
+    private fun startAllChannelMonitorJobs(){
+        monitorOrderArrival()
+        monitorShelfItemAging()
+    }
     /**
      * The method listens for order arrival emitted by the [ShelfManager]. It them updates the appropriate recycler view
      */
+    private fun monitorShelfItemAging(){
+        shelfManager?.let {manager->
+            jobList.add(GlobalScope.launch(Dispatchers.Main) {
+                while (isActive){
+                    val itemList = manager.getOrderAgeUpdateChannel().receive()
+                    when(itemList[0].temp){
+                        "hot" -> {
+                            val adapter: RecyclerViewAdapterInterface =
+                                recyclerViewHot.adapter as RecyclerViewAdapterInterface
+                            adapter.update(itemList)
+                        }
+
+                        "cold" -> {
+                            val adapter: RecyclerViewAdapterInterface =
+                                recyclerViewCold.adapter as RecyclerViewAdapterInterface
+                            adapter.update(itemList)
+                        }
+                        "frozen" -> {
+                            val adapter: RecyclerViewAdapterInterface =
+                                recyclerViewFrozen.adapter as RecyclerViewAdapterInterface
+                            adapter.update(itemList)
+                        }
+                        "overflow" ->{
+                            val adapter: RecyclerViewAdapterInterface =
+                                recyclerViewOverFlow.adapter as RecyclerViewAdapterInterface
+                            adapter.update(itemList)
+                        }
+                    }
+                }
+            })
+        }
+    }
     private fun monitorOrderArrival() {
         shelfManager?.let { shelfManager ->
             jobList.add(GlobalScope.launch(Dispatchers.Main) {
@@ -127,7 +162,7 @@ class MainActivity : AppCompatActivity(), ServiceConnection {
         kitchenService = serviceBinder.getService()
         kitchenService?.let { service ->
             shelfManager = ShelfManager(service)
-            monitorOrderArrival()
+            startAllChannelMonitorJobs()
         }
     }
 
@@ -139,7 +174,7 @@ class MainActivity : AppCompatActivity(), ServiceConnection {
         val intent = Intent(this, FoodOrderService::class.java)
         bindService(intent, this, Context.BIND_AUTO_CREATE)
         jobList.forEach { it.cancel() }
-        monitorOrderArrival()
+        startAllChannelMonitorJobs()
     }
 
     /**

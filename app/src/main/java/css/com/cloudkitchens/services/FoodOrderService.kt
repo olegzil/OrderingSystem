@@ -25,9 +25,9 @@ import java.util.concurrent.ThreadLocalRandom
 class FoodOrderService : Service(), KitchenOrderNotification {
     private var kitchenOrders: JSONArray? = null
     private val binder = OrderSourceBinder()
-    private var driverArrivalChannel = Channel<String>(Channel.UNLIMITED)
-    private var orderNotificationChannel = Channel<KitchenOrderServerDetail>(Channel.UNLIMITED)
-    private val heatBeatChannel= Channel<Long>(Channel.UNLIMITED)
+    private var driverArrivalChannel = Channel<String>(Channel.RENDEZVOUS)
+    private var orderNotificationChannel = Channel<KitchenOrderServerDetail>(Channel.RENDEZVOUS)
+    private val heatBeatChannel= Channel<Long>(Channel.RENDEZVOUS)
     private var continueRunning = true
     private var debugTime = 0L
     private var sampleCount = 1.0

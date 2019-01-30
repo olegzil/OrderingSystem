@@ -33,7 +33,8 @@ class ShelfManager(private val service: FoodOrderService) : ShelfManagerInterfac
 
     private val shelves = mutableMapOf<Shelves, ShelfInterface>()
     private val jobsList = mutableListOf<Job>()
-    private val shelfStatusChannel = Channel<KitchenOrderShelfStatus>(Channel.UNLIMITED)
+    private val shelfStatusChannel = Channel<KitchenOrderShelfStatus>(Channel.RENDEZVOUS)
+    private val orderUpdateChannel = Channel<List<KitchenOrderDetail>>(Channel.RENDEZVOUS)
 
     //Initialize shelves
     init {
@@ -46,6 +47,7 @@ class ShelfManager(private val service: FoodOrderService) : ShelfManagerInterfac
         initiateOrderAging()
     }
 
+    override fun getOrderAgeUpdateChannel()= orderUpdateChannel
     override fun getOrderArrivalChannel() = shelfStatusChannel
     override fun cleanup() {
         jobsList.forEach { it.cancel() }
@@ -231,6 +233,22 @@ class ShelfManager(private val service: FoodOrderService) : ShelfManagerInterfac
                 shelves[Shelves.SHELF_OVERFLOW]?.ageOrder(AGING_DELTAL)
                 removeExpiredOrders()
                 moveOrdersFromOverflow()
+                shelves[Shelves.SHELF_HOT]?.let {shelfItems->
+                    if (shelfItems.getKitchenOrderDetailList().isNotEmpty())
+                        orderUpdateChannel.offer(shelfItems.getKitchenOrderDetailList())
+                }
+                shelves[Shelves.SHELF_COLD]?.let { shelfItems->
+                    if (shelfItems.getKitchenOrderDetailList().isNotEmpty())
+                        orderUpdateChannel.offer(shelfItems.getKitchenOrderDetailList())
+                }
+                shelves[Shelves.SHELF_FROZEN]?.let {shelfItems->
+                    if (shelfItems.getKitchenOrderDetailList().isNotEmpty())
+                        orderUpdateChannel.offer(shelfItems.getKitchenOrderDetailList())
+                }
+                shelves[Shelves.SHELF_OVERFLOW]?.let {shelfItems->
+                    if (shelfItems.getKitchenOrderDetailList().isNotEmpty())
+                        orderUpdateChannel.offer(shelfItems.getKitchenOrderDetailList())
+                }
                 printLog("order hart beat ${System.currentTimeMillis() - start} time delay = $timeDelay")
             }
         })

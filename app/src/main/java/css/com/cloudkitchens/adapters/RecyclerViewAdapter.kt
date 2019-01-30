@@ -59,6 +59,15 @@ class RecyclerViewAdapter : RecyclerViewAdapterInterface, RecyclerView.Adapter<R
         notifyDataSetChanged()
     }
 
+    override fun updateSingleOrder(order:KitchenOrderDetail){
+        var index=0
+        itemList.first { order.id == it.id }.let {targetOrder->
+            itemList[index] = order
+            ++index
+            notifyItemChanged(index)
+        }
+    }
+
     override fun update(newItems: List<KitchenOrderDetail>) {
         itemList.clear()
         itemList.addAll(newItems)
