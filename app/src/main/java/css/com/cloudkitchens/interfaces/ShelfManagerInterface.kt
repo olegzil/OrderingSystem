@@ -1,9 +1,9 @@
 package css.com.cloudkitchens.interfaces
 
+import css.com.cloudkitchens.dataproviders.KitchenOrderShelfStatus
+import kotlinx.coroutines.channels.Channel
+
 interface ShelfManagerInterface {
-    fun updateHotShelf()
-    fun updateColdShelf()
-    fun updateFrozenShelf()
-    fun getAverageShelfResidence()
-    fun getWaistageCount()
+    fun getOrderArrivalChannel(): Channel<KitchenOrderShelfStatus>
+    fun cleanup()
 }

@@ -1,11 +1,10 @@
 package css.com.cloudkitchens.interfaces
 
 import css.com.cloudkitchens.dataproviders.KitchenOrderServerDetail
-import io.reactivex.Observable
-import io.reactivex.subjects.PublishSubject
+import kotlinx.coroutines.channels.Channel
 
 interface KitchenOrderNotification {
-    fun getOrderNotificationChannel() : PublishSubject<KitchenOrderServerDetail>?
-    fun getOrderHeartbeat(): Observable<Long>
-    fun getDriverNotification():Observable<String>
+    fun getOrderNotificationChannel() : Channel<KitchenOrderServerDetail>
+    fun getOrderHeartbeat(): Channel<Long>
+    fun getDriverNotification():Channel<String>
 }
