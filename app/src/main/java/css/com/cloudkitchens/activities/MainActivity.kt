@@ -14,6 +14,7 @@ import android.view.MenuItem
 import android.widget.TextView
 import css.com.cloudkitchens.R
 import css.com.cloudkitchens.adapters.RecyclerViewAdapter
+import css.com.cloudkitchens.dataproviders.KitchenOrderDetail
 import css.com.cloudkitchens.dataproviders.KitchenOrderShelfStatus
 import css.com.cloudkitchens.interfaces.RecyclerViewAdapterInterface
 import css.com.cloudkitchens.managers.ShelfManager
@@ -69,6 +70,11 @@ class MainActivity : AppCompatActivity(), ServiceConnection {
         monitorShelfItemAging()
     }
 
+    private fun processSingleAgingRequest(itemList: List<KitchenOrderDetail>, adapter: RecyclerViewAdapterInterface) =
+        GlobalScope.launch(Dispatchers.Main) {
+            adapter.update(itemList)
+        }
+
     /**
      * The method listens for order arrival emitted by the [ShelfManager]. It them updates the appropriate recycler view
      */
@@ -78,27 +84,22 @@ class MainActivity : AppCompatActivity(), ServiceConnection {
                 while (isActive) {
                     val itemList = manager.getOrderAgeUpdateChannel().receive()
                     when (itemList[0].temp) {
-                        "hot" -> {
-                            val adapter: RecyclerViewAdapterInterface =
-                                recyclerViewHot.adapter as RecyclerViewAdapterInterface
-                            adapter.update(itemList)
-                        }
-
-                        "cold" -> {
-                            val adapter: RecyclerViewAdapterInterface =
-                                recyclerViewCold.adapter as RecyclerViewAdapterInterface
-                            adapter.update(itemList)
-                        }
-                        "frozen" -> {
-                            val adapter: RecyclerViewAdapterInterface =
-                                recyclerViewFrozen.adapter as RecyclerViewAdapterInterface
-                            adapter.update(itemList)
-                        }
-                        "overflow" -> {
-                            val adapter: RecyclerViewAdapterInterface =
-                                recyclerViewOverFlow.adapter as RecyclerViewAdapterInterface
-                            adapter.update(itemList)
-                        }
+                        "hot" -> processSingleAgingRequest(
+                            itemList,
+                            recyclerViewHot.adapter as RecyclerViewAdapterInterface
+                        )
+                        "cold" -> processSingleAgingRequest(
+                            itemList,
+                            recyclerViewCold.adapter as RecyclerViewAdapterInterface
+                        )
+                        "frozen" -> processSingleAgingRequest(
+                            itemList,
+                            recyclerViewFrozen.adapter as RecyclerViewAdapterInterface
+                        )
+                        "overflow" -> processSingleAgingRequest(
+                            itemList,
+                            recyclerViewOverFlow.adapter as RecyclerViewAdapterInterface
+                        )
                     }
                 }
             })
