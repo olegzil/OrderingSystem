@@ -4,9 +4,8 @@ import css.com.cloudkitchens.dataproviders.KitchenOrderDetail
 import css.com.cloudkitchens.interfaces.ShelfInterface
 import css.com.cloudkitchens.interfaces.ShelfOrderInterface
 
-abstract class BaseShelf : ShelfInterface {
-    private class ShelfOrder(private var orderDetail: KitchenOrderDetail) : ShelfOrderInterface {
-        private var decayRateMultiplier=1.0
+abstract class BaseShelf(private var decayRateMultiplier:Double=1.0) : ShelfInterface {
+    private class ShelfOrder(private var orderDetail: KitchenOrderDetail, private var decayRateMultiplier:Double) : ShelfOrderInterface {
         var orderAge = 0L
         override fun getDecayRate() = decayRateMultiplier
 
@@ -82,7 +81,7 @@ abstract class BaseShelf : ShelfInterface {
 
     @Synchronized
     override fun addOrder(orderDetail: KitchenOrderDetail) {
-        orderList[orderDetail.id] = ShelfOrder(orderDetail)
+        orderList[orderDetail.id] = ShelfOrder(orderDetail, decayRateMultiplier)
     }
 
     @Synchronized
