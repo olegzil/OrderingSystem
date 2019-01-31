@@ -27,7 +27,7 @@ class FoodOrderService : Service(), KitchenOrderNotification {
     private val binder = OrderSourceBinder()
     private var driverArrivalChannel = Channel<String>(Channel.RENDEZVOUS)
     private var orderNotificationChannel = Channel<KitchenOrderServerDetail>(Channel.RENDEZVOUS)
-    private val heatBeatChannel= Channel<Long>(Channel.RENDEZVOUS)
+    private val heartBeatChannel= Channel<Long>(Channel.RENDEZVOUS)
     private var continueRunning = true
     private var debugTime = 0L
     private var sampleCount = 1.0
@@ -51,7 +51,7 @@ class FoodOrderService : Service(), KitchenOrderNotification {
         jobList.add(GlobalScope.launch {
             while(isActive) {
                 delay(AGING_HEART_BEAT)
-                heatBeatChannel.offer(AGING_HEART_BEAT)
+                heartBeatChannel.offer(AGING_HEART_BEAT)
             }
         })
 
@@ -154,7 +154,7 @@ class FoodOrderService : Service(), KitchenOrderNotification {
 
     override fun getOrderNotificationChannel() = orderNotificationChannel
     override fun getDriverNotification() = driverArrivalChannel
-    override fun getOrderHeartbeat() = heatBeatChannel
+    override fun getOrderHeartbeat() = heartBeatChannel
 
     /**
      * This method generates random kitchen orders.
