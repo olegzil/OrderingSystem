@@ -14,6 +14,7 @@ import android.view.MenuItem
 import android.widget.TextView
 import css.com.cloudkitchens.R
 import css.com.cloudkitchens.adapters.RecyclerViewAdapter
+import css.com.cloudkitchens.dataproviders.KitchenOrderShelfStatus
 import css.com.cloudkitchens.interfaces.RecyclerViewAdapterInterface
 import css.com.cloudkitchens.managers.ShelfManager
 import css.com.cloudkitchens.services.FoodOrderService
@@ -62,19 +63,21 @@ class MainActivity : AppCompatActivity(), ServiceConnection {
             LinearLayoutManager(applicationContext, LinearLayoutManager.HORIZONTAL, false)
 
     }
-    private fun startAllChannelMonitorJobs(){
+
+    private fun startAllChannelMonitorJobs() {
         monitorOrderArrival()
         monitorShelfItemAging()
     }
+
     /**
      * The method listens for order arrival emitted by the [ShelfManager]. It them updates the appropriate recycler view
      */
-    private fun monitorShelfItemAging(){
-        shelfManager?.let {manager->
+    private fun monitorShelfItemAging() {
+        shelfManager?.let { manager ->
             jobList.add(GlobalScope.launch(Dispatchers.Main) {
-                while (isActive){
+                while (isActive) {
                     val itemList = manager.getOrderAgeUpdateChannel().receive()
-                    when(itemList[0].temp){
+                    when (itemList[0].temp) {
                         "hot" -> {
                             val adapter: RecyclerViewAdapterInterface =
                                 recyclerViewHot.adapter as RecyclerViewAdapterInterface
@@ -91,7 +94,7 @@ class MainActivity : AppCompatActivity(), ServiceConnection {
                                 recyclerViewFrozen.adapter as RecyclerViewAdapterInterface
                             adapter.update(itemList)
                         }
-                        "overflow" ->{
+                        "overflow" -> {
                             val adapter: RecyclerViewAdapterInterface =
                                 recyclerViewOverFlow.adapter as RecyclerViewAdapterInterface
                             adapter.update(itemList)
@@ -101,46 +104,40 @@ class MainActivity : AppCompatActivity(), ServiceConnection {
             })
         }
     }
+
+    private fun processSingleShelfOrder(orders: KitchenOrderShelfStatus, count: Int) =
+        GlobalScope.launch(Dispatchers.Main) {
+            val adapter = recyclerViewHot.adapter as RecyclerViewAdapterInterface
+            adapter.update(orders.shelfStatus)
+            findViewById<TextView>(count)?.let { count ->
+                count.text = orders.shelfStatus.size.toString()
+            }
+        }
+
+    private fun processOverFlowShelfOrder(orders: KitchenOrderShelfStatus, count: Int) =
+        GlobalScope.launch(Dispatchers.Main) {
+            val adapter: RecyclerViewAdapterInterface =
+                recyclerViewOverFlow.adapter as RecyclerViewAdapterInterface
+            adapter.update(orders.overFlow)
+            findViewById<TextView>(count)?.let { count ->
+                count.text = orders.overFlow.size.toString()
+            }
+        }
+
+
     private fun monitorOrderArrival() {
         shelfManager?.let { shelfManager ->
             jobList.add(GlobalScope.launch(Dispatchers.Main) {
                 while (isActive) {
                     val orders = shelfManager.getOrderArrivalChannel().receive()
                     when (orders.orderSelector) {
-                        "hot" -> {
-                            val adapter: RecyclerViewAdapterInterface =
-                                recyclerViewHot.adapter as RecyclerViewAdapterInterface
-                            adapter.update(orders.shelfStatus)
-                            findViewById<TextView>(R.id.count_hot_id)?.let { count->
-                                count.text = orders.shelfStatus.size.toString()
-                            }
-                        }
-
-                        "cold" -> {
-                            val adapter: RecyclerViewAdapterInterface =
-                                recyclerViewCold.adapter as RecyclerViewAdapterInterface
-                            adapter.update(orders.shelfStatus)
-                            findViewById<TextView>(R.id.count_cold_id)?.let {count->
-                                count.text = orders.shelfStatus.size.toString()
-                            }
-                        }
-                        "frozen" -> {
-                            val adapter: RecyclerViewAdapterInterface =
-                                recyclerViewFrozen.adapter as RecyclerViewAdapterInterface
-                            adapter.update(orders.shelfStatus)
-                            findViewById<TextView>(R.id.count_frozen_id)?.let {count->
-                                count.text = orders.shelfStatus.size.toString()
-                            }
-                        }
+                        "hot" -> processSingleShelfOrder(orders, R.id.count_hot_id)
+                        "cold" -> processSingleShelfOrder(orders, R.id.count_cold_id)
+                        "frozen" -> processSingleShelfOrder(orders, R.id.count_frozen_id)
                         else -> printLog("unknown temperature: ${orders.orderSelector}")
                     }
                     if (orders.overFlow.isNotEmpty()) {
-                        val adapter: RecyclerViewAdapterInterface =
-                            recyclerViewOverFlow.adapter as RecyclerViewAdapterInterface
-                        adapter.update(orders.overFlow)
-                        findViewById<TextView>(R.id.count_overflow_id)?.let { count->
-                            count.text = orders.overFlow.size.toString()
-                        }
+                        processOverFlowShelfOrder(orders, R.id.count_overflow_id)
                     }
                 }
             })
