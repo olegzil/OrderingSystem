@@ -11,6 +11,7 @@
     <string name="order_decay_rate">Decay</string>
     <string name="order_normalized">Normalized life</string>
     <string name="order_remaining_life">Life remaining</string>
+    <string name="order_value">Order value</string>
     <string name="hot_text_item_count">0</string>
     <string name="shelf_average_time">0</string>
 </resources>

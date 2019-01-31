@@ -8,7 +8,7 @@ data class KitchenOrderDetail(
     val decayRate: Double,
     val timeStamp: Long,
     var normalizedShelfLife: Double,
-    var orderDecay: Double,
+    var orderValue: Double,
     var orderRemainingLife: Long
 )
 

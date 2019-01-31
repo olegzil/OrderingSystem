@@ -20,12 +20,14 @@ class RecyclerViewAdapter : RecyclerViewAdapterInterface, RecyclerView.Adapter<R
             val decayRate = itemView.findViewById<TextView>(R.id.order_decay_rate)
             val normalizedLife = itemView.findViewById<TextView>(R.id.order_normalized_life)
             val remainingLife = itemView.findViewById<TextView>(R.id.order_life_remaining)
+            val orderValue = itemView.findViewById<TextView>(R.id.order_value_id)
             name.text = itemDetail.name
             temp.text = itemDetail.temp
             maxLife.text = itemDetail.shelfLife.toString()
             decayRate.text = String.format("%2.3f", itemDetail.decayRate)
             normalizedLife.text = String.format("%2.3f", itemDetail.normalizedShelfLife)
             remainingLife.text = itemDetail.orderRemainingLife.toString()
+            orderValue.text = String.format("%4.3f", itemDetail.orderValue)
         }
     }
 

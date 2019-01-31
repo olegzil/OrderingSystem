@@ -18,21 +18,8 @@
     <android.support.constraint.ConstraintLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/constraint_layout">
+            android:id="@+id/constraint_layout" android:minHeight="0dp">
 
-        <TextView
-                android:text="0"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/order_normalized_life"
-                android:textSize="12sp"
-                android:textStyle="bold"
-                app:layout_constraintStart_toStartOf="@+id/order_decay_rate"
-                app:layout_constraintEnd_toEndOf="parent"
-                android:layout_marginEnd="8dp"
-                app:layout_constraintTop_toBottomOf="@+id/order_name_id"
-                android:layout_marginBottom="1dp"
-                app:layout_constraintBottom_toTopOf="@+id/order_decay_rate"/>
         <TextView
                 android:id="@+id/order_name_id"
                 android:text="@string/order_name"
@@ -43,10 +30,11 @@
                 android:paddingEnd="8dp"
                 android:textSize="12sp" android:textStyle="bold"
                 android:textIsSelectable="false"
-                app:layout_constraintEnd_toEndOf="parent" android:layout_marginEnd="16dp" android:layout_marginTop="1dp"
+                app:layout_constraintStart_toStartOf="@+id/order_normalized_life"
+                app:layout_constraintEnd_toEndOf="@+id/order_normalized_life"
+                app:layout_constraintHorizontal_bias="0.5"
                 app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toTopOf="@+id/order_normalized_life"
-                app:layout_constraintStart_toEndOf="@+id/title_name_id" android:layout_marginStart="44dp"/>
+                app:layout_constraintBottom_toTopOf="@+id/order_normalized_life" android:layout_marginTop="8dp"/>
         <TextView
                 android:text="0"
                 android:layout_width="wrap_content"
@@ -54,104 +42,80 @@
                 android:id="@+id/order_temperture" android:textSize="12sp"
                 android:textStyle="bold"
                 app:layout_constraintStart_toStartOf="@+id/order_life_remaining"
-                app:layout_constraintEnd_toEndOf="parent" android:layout_marginEnd="8dp" android:layout_marginTop="1dp"
-                app:layout_constraintTop_toBottomOf="@+id/order_shelf_life" android:layout_marginBottom="1dp"
+                app:layout_constraintEnd_toEndOf="@+id/order_life_remaining"
+                app:layout_constraintTop_toBottomOf="@+id/order_shelf_life" app:layout_constraintHorizontal_bias="0.5"
                 app:layout_constraintBottom_toTopOf="@+id/order_life_remaining"/>
-        <TextView
-                android:text="0"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/order_life_remaining" android:textSize="12sp"
-                android:textStyle="bold"
-                app:layout_constraintEnd_toEndOf="parent"
-                android:layout_marginEnd="8dp" android:layout_marginTop="1dp"
-                app:layout_constraintTop_toBottomOf="@+id/order_temperture"
-                app:layout_constraintBottom_toBottomOf="parent"/>
-        <TextView
-                android:text="0"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/order_shelf_life" android:textSize="12sp"
-                android:textStyle="bold"
-                app:layout_constraintStart_toStartOf="@+id/order_temperture" app:layout_constraintEnd_toEndOf="parent"
-                android:layout_marginEnd="8dp" android:layout_marginTop="1dp"
-                app:layout_constraintTop_toBottomOf="@+id/order_decay_rate" android:layout_marginBottom="2dp"
-                app:layout_constraintBottom_toTopOf="@+id/order_temperture"/>
         <TextView
                 android:text="0"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/order_decay_rate" android:textSize="12sp"
                 android:textStyle="bold"
-                app:layout_constraintStart_toStartOf="@+id/order_shelf_life" app:layout_constraintEnd_toEndOf="parent"
-                android:layout_marginEnd="8dp" android:layout_marginTop="1dp"
-                app:layout_constraintTop_toBottomOf="@+id/order_normalized_life"/>
+                app:layout_constraintStart_toStartOf="@+id/order_shelf_life"
+                app:layout_constraintEnd_toEndOf="@+id/order_shelf_life" app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintTop_toBottomOf="@+id/order_normalized_life"
+                app:layout_constraintBottom_toTopOf="@+id/order_shelf_life"/>
+        <TextView
+                android:text="0"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/order_shelf_life" android:textSize="12sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="@+id/order_temperture"
+                app:layout_constraintEnd_toEndOf="@+id/order_temperture"
+                app:layout_constraintHorizontal_bias="0.5" app:layout_constraintTop_toBottomOf="@+id/order_decay_rate"
+                app:layout_constraintBottom_toTopOf="@+id/order_temperture"/>
+        <TextView
+                android:text="0"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/order_normalized_life"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="@+id/order_decay_rate"
+                app:layout_constraintEnd_toEndOf="@+id/order_decay_rate" app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintTop_toBottomOf="@+id/order_name_id"
+                app:layout_constraintBottom_toTopOf="@+id/order_decay_rate"/>
+        <TextView
+                android:text="0"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/order_life_remaining" android:textSize="12sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="@+id/order_value_id"
+                app:layout_constraintEnd_toEndOf="@+id/order_value_id" app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintTop_toBottomOf="@+id/order_temperture"
+                app:layout_constraintBottom_toTopOf="@+id/order_value_id"/>
+        <TextView
+                android:text="0"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/order_value_id"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/order_life_remaining"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/title_order_value" android:layout_marginStart="8dp"/>
         <TextView
                 android:id="@+id/title_name_id"
                 android:text="@string/order_name"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="48dp"
+                android:layout_height="16dp"
                 android:minWidth="0dp"
                 android:paddingStart="8dp"
                 android:paddingEnd="8dp"
                 android:textSize="12sp"
                 android:textIsSelectable="false"
                 android:textStyle="bold"
+                android:layout_marginTop="8dp"
+                app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintStart_toStartOf="@+id/title_normalized_life_id"
                 app:layout_constraintEnd_toEndOf="@+id/title_normalized_life_id"
-                app:layout_constraintTop_toTopOf="parent" app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintHorizontal_bias="0.5"
                 app:layout_constraintBottom_toTopOf="@+id/title_normalized_life_id"/>
-        <TextView
-                android:id="@+id/title_temp_id"
-                android:text="@string/order_temp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:minWidth="0dp"
-                android:paddingStart="8dp"
-                android:paddingEnd="8dp"
-                android:textSize="12sp"
-                android:textIsSelectable="false"
-                android:textStyle="bold"
-                app:layout_constraintStart_toStartOf="@+id/title_remaining_life"
-                app:layout_constraintEnd_toEndOf="@+id/title_remaining_life"
-                app:layout_constraintTop_toBottomOf="@+id/title_shelf_max_life_id"
-                app:layout_constraintHorizontal_bias="0.5"
-                app:layout_constraintBottom_toTopOf="@+id/title_remaining_life"/>
-        <TextView
-                android:id="@+id/title_shelf_max_life_id"
-                android:text="@string/order_shelf_life"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:minWidth="0dp"
-                android:paddingStart="8dp"
-                android:paddingEnd="8dp"
-                android:textSize="12sp"
-                android:textIsSelectable="false"
-                android:textStyle="bold"
-                app:layout_constraintStart_toStartOf="@+id/title_temp_id"
-                app:layout_constraintEnd_toEndOf="@+id/title_temp_id"
-                app:layout_constraintTop_toBottomOf="@+id/title_decay_rate_id"
-                app:layout_constraintHorizontal_bias="0.5" app:layout_constraintBottom_toTopOf="@+id/title_temp_id"/>
-        <TextView
-                android:id="@+id/title_decay_rate_id"
-                android:text="@string/order_decay_rate"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:minWidth="0dp"
-                android:paddingStart="8dp"
-                android:paddingEnd="8dp"
-                android:textSize="12sp"
-                android:textIsSelectable="false"
-                android:textStyle="bold"
-                app:layout_constraintStart_toStartOf="@+id/title_shelf_max_life_id"
-                app:layout_constraintEnd_toEndOf="@+id/title_shelf_max_life_id"
-                app:layout_constraintTop_toBottomOf="@+id/title_normalized_life_id"
-                app:layout_constraintHorizontal_bias="0.5"
-                app:layout_constraintBottom_toTopOf="@+id/title_shelf_max_life_id"/>
         <TextView
                 android:id="@+id/title_normalized_life_id"
                 android:text="@string/order_normalized"
-                android:layout_width="104dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:minWidth="0dp"
                 android:paddingStart="8dp"
@@ -164,15 +128,72 @@
                 app:layout_constraintTop_toBottomOf="@+id/title_name_id" app:layout_constraintHorizontal_bias="0.5"
                 app:layout_constraintBottom_toTopOf="@+id/title_decay_rate_id"/>
         <TextView
+                android:id="@+id/title_decay_rate_id"
+                android:text="@string/order_decay_rate"
+                android:layout_width="50dp"
+                android:layout_height="16dp"
+                android:minWidth="0dp"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:textSize="12sp"
+                android:textIsSelectable="false"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="@+id/title_shelf_max_life_id"
+                app:layout_constraintEnd_toEndOf="@+id/title_shelf_max_life_id"
+                app:layout_constraintTop_toBottomOf="@+id/title_normalized_life_id"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintBottom_toTopOf="@+id/title_shelf_max_life_id"/>
+        <TextView
+                android:id="@+id/title_shelf_max_life_id"
+                android:text="@string/order_shelf_life"
+                android:layout_width="64dp"
+                android:layout_height="16dp"
+                android:minWidth="0dp"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:textSize="12sp"
+                android:textIsSelectable="false"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="@+id/title_temp_id"
+                app:layout_constraintEnd_toEndOf="@+id/title_temp_id"
+                app:layout_constraintTop_toBottomOf="@+id/title_decay_rate_id"
+                app:layout_constraintHorizontal_bias="0.5" app:layout_constraintBottom_toTopOf="@+id/title_temp_id"/>
+        <TextView
+                android:id="@+id/title_temp_id"
+                android:text="@string/order_temp"
+                android:layout_width="87dp"
+                android:layout_height="17dp"
+                android:minWidth="0dp"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:textSize="12sp"
+                android:textIsSelectable="false"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="@+id/title_remaining_life"
+                app:layout_constraintEnd_toEndOf="@+id/title_remaining_life"
+                app:layout_constraintTop_toBottomOf="@+id/title_shelf_max_life_id"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintBottom_toTopOf="@+id/title_remaining_life"/>
+        <TextView
                 android:text="@string/order_remaining_life"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="78dp"
+                android:layout_height="16dp"
                 android:id="@+id/title_remaining_life" android:textSize="12sp"
                 android:textIsSelectable="false"
                 android:textStyle="bold"
-                app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintTop_toBottomOf="@+id/title_temp_id"
-                app:layout_constraintStart_toStartOf="parent" android:layout_marginStart="45dp"
-                app:layout_constraintEnd_toStartOf="@+id/order_life_remaining" android:layout_marginEnd="71dp"/>
+                app:layout_constraintStart_toStartOf="@+id/title_order_value"
+                app:layout_constraintEnd_toEndOf="@+id/title_order_value"
+                app:layout_constraintTop_toBottomOf="@+id/title_temp_id" app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintBottom_toTopOf="@+id/title_order_value"/>
+        <TextView
+                android:text="Order value"
+                android:layout_width="72dp"
+                android:layout_height="19dp"
+                android:id="@+id/title_order_value"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/title_remaining_life"
+                app:layout_constraintEnd_toStartOf="@+id/guideline4"
+                app:layout_constraintStart_toStartOf="@+id/guideline5"/>
         <android.support.constraint.Guideline
                 android:orientation="vertical"
                 android:layout_width="wrap_content"
@@ -195,9 +216,10 @@
                 android:orientation="vertical"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/guideline6" app:layout_constraintGuide_end="27dp"
+                android:id="@+id/guideline6"
                 app:layout_constraintTop_toTopOf="@+id/order_life_remaining"
-                app:layout_constraintBottom_toBottomOf="@+id/order_life_remaining"/>
+                app:layout_constraintBottom_toBottomOf="@+id/order_life_remaining"
+                app:layout_constraintGuide_begin="180dp"/>
 
     </android.support.constraint.ConstraintLayout>
 
