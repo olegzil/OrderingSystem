@@ -286,9 +286,7 @@ class ShelfManager(private val service: FoodOrderService) : ShelfManagerInterfac
                     "hot" -> {
                         shelves[Shelves.SHELF_HOT]?.let { shelf ->
                             if (shelf.getOrdersCount() >= Constants.MAX_HOT_SHELF_CAPACITY) {
-                                removeExpiredOrdersFromSingleShelf(
-                                    { shelves[Shelves.SHELF_HOT]?.removeOrder() }
-                                )
+                                removeExpiredOrdersFromSingleShelf { shelves[Shelves.SHELF_HOT]?.removeOrder() }
                             } else {
                                 shelves[Shelves.SHELF_HOT]?.addOrder(
                                     KitchenOrderDetail(
