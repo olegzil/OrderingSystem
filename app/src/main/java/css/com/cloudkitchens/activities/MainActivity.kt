@@ -36,6 +36,9 @@ class MainActivity : AppCompatActivity(), ServiceConnection {
     private lateinit var recyclerViewCold: RecyclerView
     private lateinit var recyclerViewFrozen: RecyclerView
     private lateinit var recyclerViewOverFlow: RecyclerView
+    private val JobUISupervisor = SupervisorJob()
+    private val scopeUIMainThreadSupervised = CoroutineScope(Dispatchers.Main+JobUISupervisor)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(css.com.cloudkitchens.R.layout.activity_main)
@@ -71,16 +74,14 @@ class MainActivity : AppCompatActivity(), ServiceConnection {
     }
 
     private fun processSingleAgingRequest(itemList: List<KitchenOrderDetail>, adapter: RecyclerViewAdapterInterface) =
-        GlobalScope.launch(Dispatchers.Main) {
-            adapter.update(itemList)
-        }
+        adapter.update(itemList)
 
     /**
      * The method listens for order arrival emitted by the [ShelfManager]. It them updates the appropriate recycler view
      */
     private fun monitorShelfItemAging() {
         shelfManager?.let { manager ->
-            jobList.add(GlobalScope.launch(Dispatchers.Main) {
+            jobList.add(scopeUIMainThreadSupervised.launch {
                 while (isActive) {
                     val itemList = manager.getOrderAgeUpdateChannel().receive()
                     when (itemList[0].temp) {
@@ -107,7 +108,7 @@ class MainActivity : AppCompatActivity(), ServiceConnection {
     }
 
     private fun processSingleShelfOrder(orders: KitchenOrderShelfStatus, count: Int) =
-        GlobalScope.launch(Dispatchers.Main) {
+        scopeUIMainThreadSupervised.launch {
             val adapter = recyclerViewHot.adapter as RecyclerViewAdapterInterface
             adapter.update(orders.shelfStatus)
             findViewById<TextView>(count)?.let { count ->
@@ -116,7 +117,7 @@ class MainActivity : AppCompatActivity(), ServiceConnection {
         }
 
     private fun processOverFlowShelfOrder(orders: KitchenOrderShelfStatus, count: Int) =
-        GlobalScope.launch(Dispatchers.Main) {
+        scopeUIMainThreadSupervised.launch {
             val adapter: RecyclerViewAdapterInterface =
                 recyclerViewOverFlow.adapter as RecyclerViewAdapterInterface
             adapter.update(orders.overFlow)
@@ -128,7 +129,7 @@ class MainActivity : AppCompatActivity(), ServiceConnection {
 
     private fun monitorOrderArrival() {
         shelfManager?.let { shelfManager ->
-            jobList.add(GlobalScope.launch(Dispatchers.Main) {
+            jobList.add(scopeUIMainThreadSupervised.launch {
                 while (isActive) {
                     val orders = shelfManager.getOrderArrivalChannel().receive()
                     when (orders.orderSelector) {

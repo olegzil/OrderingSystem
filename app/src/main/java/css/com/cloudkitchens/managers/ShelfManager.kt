@@ -24,6 +24,9 @@ import kotlinx.coroutines.channels.Channel
  * This class is responsible for managing the various shelves and driver pickup.
  */
 class ShelfManager(private val service: FoodOrderService) : ShelfManagerInterface {
+    private val JobUISupervisor = SupervisorJob()
+    private val scopeNonMainThreadSupervised = CoroutineScope(Dispatchers.IO+JobUISupervisor)
+
     private enum class Shelves {
         SHELF_HOT,
         SHELF_COLD,
@@ -50,7 +53,7 @@ class ShelfManager(private val service: FoodOrderService) : ShelfManagerInterfac
     override fun getOrderAgeUpdateChannel()= orderUpdateChannel
     override fun getOrderArrivalChannel() = shelfStatusChannel
     override fun cleanup() {
-        jobsList.forEach { it.cancel() }
+        scopeNonMainThreadSupervised.coroutineContext.cancelChildren()
     }
 
     /**
@@ -210,7 +213,7 @@ class ShelfManager(private val service: FoodOrderService) : ShelfManagerInterfac
      * Each arival also results in an order being removed from the shelf
      */
     fun initiateDeliveries() {
-        jobsList.add(GlobalScope.launch(Dispatchers.IO) {
+        jobsList.add(scopeNonMainThreadSupervised.launch {
             while (isActive) {
                 shelfUpdateSelector(service.getDriverNotification().receive())
             }
@@ -223,7 +226,7 @@ class ShelfManager(private val service: FoodOrderService) : ShelfManagerInterfac
      */
     private fun initiateOrderAging() {
         val start = System.currentTimeMillis()
-        jobsList.add(GlobalScope.launch {
+        jobsList.add(scopeNonMainThreadSupervised.launch {
             while(isActive) {
                 val timeDelay = service.getOrderHeartbeat().receive()
                 delay(timeDelay)
@@ -279,7 +282,7 @@ class ShelfManager(private val service: FoodOrderService) : ShelfManagerInterfac
      *  a [KitchenOrderShelfStatus] class that is consumed by the U.I.
      */
     private fun kitchenOrderDispatcher() {
-        jobsList.add(GlobalScope.launch {
+        jobsList.add(scopeNonMainThreadSupervised.launch {
             while (isActive) {
                 val serverOrder = service.getOrderNotificationChannel().receive()
                 when (serverOrder.temp) {

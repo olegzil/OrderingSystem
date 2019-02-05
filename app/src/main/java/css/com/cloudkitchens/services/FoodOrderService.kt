@@ -33,6 +33,9 @@ class FoodOrderService : Service(), KitchenOrderNotification {
     private var sampleCount = 1.0
     private var accumulatedTime = 0.0
     private val jobList = mutableListOf<Job>()
+    private val JobUISupervisor = SupervisorJob()
+    private val scopeNonMainThreadSupervised = CoroutineScope(Dispatchers.IO+JobUISupervisor)
+
 
     init {
         if (kitchenOrders == null)
@@ -48,20 +51,20 @@ class FoodOrderService : Service(), KitchenOrderNotification {
 
     private fun coroutineRestart() {
         jobList.forEach { it.cancel() }
-        jobList.add(GlobalScope.launch {
+        jobList.add(scopeNonMainThreadSupervised.launch {
             while(isActive) {
                 delay(AGING_HEART_BEAT)
                 heartBeatChannel.offer(AGING_HEART_BEAT)
             }
         })
 
-        jobList.add(GlobalScope.launch {
+        jobList.add(scopeNonMainThreadSupervised.launch {
             while (isActive) {
                 delay(orderGenerator())
             }
         })
 
-        jobList.add(GlobalScope.launch {
+        jobList.add(scopeNonMainThreadSupervised.launch {
             while (isActive) {
                 debugTime = System.currentTimeMillis()
                 val timeOfDirverAriaval = ThreadLocalRandom.current().nextInt(2, 9).toLong()
@@ -139,7 +142,7 @@ class FoodOrderService : Service(), KitchenOrderNotification {
 
     override fun onUnbind(intent: Intent?): Boolean {
         continueRunning = false
-        jobList.forEach { it.cancel() }
+        scopeNonMainThreadSupervised.coroutineContext.cancelChildren()
         stopSelf()
         return super.onUnbind(intent)
     }
