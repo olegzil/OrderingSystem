@@ -3,7 +3,6 @@ package css.com.cloudkitchens.shelves
 import css.com.cloudkitchens.dataproviders.KitchenOrderDetail
 import css.com.cloudkitchens.interfaces.ShelfInterface
 import css.com.cloudkitchens.interfaces.ShelfOrderInterface
-import css.com.cloudkitchens.utilities.printLog
 
 abstract class BaseShelf(private var decayRateMultiplier:Double=1.0) : ShelfInterface {
     private class ShelfOrder(private var orderDetail: KitchenOrderDetail, private var decayRateMultiplier:Double) : ShelfOrderInterface {
@@ -19,7 +18,6 @@ abstract class BaseShelf(private var decayRateMultiplier:Double=1.0) : ShelfInte
             orderDetail.normalizedShelfLife = orderAge.toDouble() / orderDetail.shelfLife
             orderDetail.orderRemainingLife = orderDetail.shelfLife - orderAge
             orderDetail.orderValue = (orderDetail.shelfLife - orderAge) - (orderDetail.decayRate*decayRateMultiplier*orderAge)
-            printLog("order value ${orderDetail.orderValue}")
         }
 
         override fun isExpired(): Boolean {
