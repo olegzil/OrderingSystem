@@ -11,6 +11,7 @@ import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import android.widget.TextView
 import css.com.cloudkitchens.R
 import css.com.cloudkitchens.adapters.RecyclerViewAdapter
@@ -37,7 +38,7 @@ class MainActivity : AppCompatActivity(), ServiceConnection {
     private lateinit var recyclerViewFrozen: RecyclerView
     private lateinit var recyclerViewOverFlow: RecyclerView
     private val JobUISupervisor = SupervisorJob()
-    private val scopeUIMainThreadSupervised = CoroutineScope(Dispatchers.Main+JobUISupervisor)
+    private val scopeUIMainThreadSupervised = CoroutineScope(Dispatchers.Main + JobUISupervisor)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -76,6 +77,26 @@ class MainActivity : AppCompatActivity(), ServiceConnection {
     private fun processSingleAgingRequest(itemList: List<KitchenOrderDetail>, adapter: RecyclerViewAdapterInterface) =
         adapter.update(itemList)
 
+    private fun hideUnpopulatedViews() {
+        val predicate = {recycler:RecyclerView, visibility:Int, viewSelector:Int, countSelector:Int ->
+            recycler.visibility = visibility
+            findViewById<TextView>(viewSelector)?.let { view ->
+                view.visibility = visibility
+            }
+            findViewById<TextView>(countSelector)?.let { view ->
+                view.visibility = visibility
+            }
+        }
+        val visibilityHot = if (recyclerViewHot.adapter?.itemCount == 0) View.GONE else View.VISIBLE
+        val visibilityCold = if (recyclerViewCold.adapter?.itemCount == 0) View.GONE else View.VISIBLE
+        val visibilityFrozen = if (recyclerViewFrozen.adapter?.itemCount == 0) View.GONE else View.VISIBLE
+        val visibilityOverflow = if (recyclerViewOverFlow.adapter?.itemCount == 0) View.GONE else View.VISIBLE
+        predicate(recyclerViewHot, visibilityHot, R.id.title_hot, R.id.count_hot_id)
+        predicate(recyclerViewCold, visibilityCold, R.id.title_cold, R.id.count_cold_id)
+        predicate(recyclerViewFrozen, visibilityFrozen, R.id.title_frozen, R.id.count_frozen_id)
+        predicate(recyclerViewOverFlow, visibilityOverflow, R.id.title_overflow, R.id.count_overflow_id)
+    }
+
     /**
      * The method listens for order arrival emitted by the [ShelfManager]. It them updates the appropriate recycler view
      */
@@ -83,6 +104,7 @@ class MainActivity : AppCompatActivity(), ServiceConnection {
         shelfManager?.let { manager ->
             jobList.add(scopeUIMainThreadSupervised.launch {
                 while (isActive) {
+                    hideUnpopulatedViews()
                     val itemList = manager.getOrderAgeUpdateChannel().receive()
                     when (itemList[0].temp) {
                         "hot" -> processSingleAgingRequest(

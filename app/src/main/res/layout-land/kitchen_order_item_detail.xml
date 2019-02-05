@@ -98,7 +98,7 @@
         <TextView
                 android:id="@+id/title_name_id"
                 android:text="@string/order_name"
-                android:layout_width="48dp"
+                android:layout_width="wrap_content"
                 android:layout_height="16dp"
                 android:minWidth="0dp"
                 android:paddingStart="8dp"
@@ -116,7 +116,7 @@
                 android:id="@+id/title_normalized_life_id"
                 android:text="@string/order_normalized"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="16dp"
                 android:minWidth="0dp"
                 android:paddingStart="8dp"
                 android:paddingEnd="8dp"
@@ -130,7 +130,7 @@
         <TextView
                 android:id="@+id/title_decay_rate_id"
                 android:text="@string/order_decay_rate"
-                android:layout_width="50dp"
+                android:layout_width="wrap_content"
                 android:layout_height="16dp"
                 android:minWidth="0dp"
                 android:paddingStart="8dp"
@@ -146,7 +146,7 @@
         <TextView
                 android:id="@+id/title_shelf_max_life_id"
                 android:text="@string/order_shelf_life"
-                android:layout_width="64dp"
+                android:layout_width="wrap_content"
                 android:layout_height="16dp"
                 android:minWidth="0dp"
                 android:paddingStart="8dp"
@@ -161,7 +161,7 @@
         <TextView
                 android:id="@+id/title_temp_id"
                 android:text="@string/order_temp"
-                android:layout_width="87dp"
+                android:layout_width="wrap_content"
                 android:layout_height="17dp"
                 android:minWidth="0dp"
                 android:paddingStart="8dp"
@@ -176,7 +176,7 @@
                 app:layout_constraintBottom_toTopOf="@+id/title_remaining_life"/>
         <TextView
                 android:text="@string/order_remaining_life"
-                android:layout_width="78dp"
+                android:layout_width="wrap_content"
                 android:layout_height="16dp"
                 android:id="@+id/title_remaining_life" android:textSize="12sp"
                 android:textIsSelectable="false"
@@ -186,10 +186,10 @@
                 app:layout_constraintTop_toBottomOf="@+id/title_temp_id" app:layout_constraintHorizontal_bias="0.5"
                 app:layout_constraintBottom_toTopOf="@+id/title_order_value"/>
         <TextView
-                android:text="Order value"
-                android:layout_width="72dp"
+                android:layout_width="wrap_content"
                 android:layout_height="19dp"
                 android:id="@+id/title_order_value"
+                android:text="@string/order_value"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/title_remaining_life"
                 app:layout_constraintEnd_toStartOf="@+id/guideline4"

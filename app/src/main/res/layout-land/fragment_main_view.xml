@@ -1,180 +1,199 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                                             xmlns:app="http://schemas.android.com/apk/res-auto"
-                                             xmlns:tools="http://schemas.android.com/tools"
-                                             android:layout_width="fill_parent" android:layout_height="fill_parent"
-                                             android:layout_alignParentBottom="true"
-                                             android:orientation="horizontal" android:id="@+id/main_constraint_layout">
-    <!--U.I. busy spinner-->
-
-    <!--Recycler view for shelf detail-->
-    <android.support.v7.widget.RecyclerView
-            android:id="@+id/recycler_hot_list"
-            android:layout_width="600dp"
-            android:layout_height="wrap_content"
-            android:divider="?android:verticalDivider"
-            android:orientation="horizontal"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            xmlns:tools="http://schemas.android.com/tools"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
             android:layout_alignParentBottom="true"
-            app:reverseLayout="true"
-            app:layoutManager="android.support.v7.widget.LinearLayoutManager"
-            android:scrollbars="horizontal"
-            android:clipToPadding="false"
-            android:clipChildren="false"
-            android:elevation="?android:attr/actionBarSize"
-            tools:listitem="@layout/kitchen_order_item_detail"
+            android:id="@+id/scroll_view" app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent" app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+
+    <android.support.constraint.ConstraintLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
             app:layout_constraintTop_toTopOf="parent"
-            android:layout_marginBottom="3dp" app:layout_constraintBottom_toTopOf="@+id/recycler_cold_list"
-            app:layout_constraintVertical_bias="0.48000002" app:layout_constraintStart_toEndOf="@+id/guideline2"
-            android:layout_marginStart="4dp" android:layout_marginEnd="31dp" app:layout_constraintEnd_toEndOf="parent"
-    >
-    </android.support.v7.widget.RecyclerView>
-    <android.support.v7.widget.RecyclerView
-            android:id="@+id/recycler_frozen_list"
-            android:layout_width="600dp"
-            android:layout_height="wrap_content"
-            android:divider="?android:verticalDivider"
-            android:orientation="horizontal"
-            android:layout_alignParentBottom="true"
-            app:reverseLayout="true"
-            app:layoutManager="android.support.v7.widget.LinearLayoutManager"
-            android:scrollbars="horizontal"
-            android:clipToPadding="false"
-            android:clipChildren="false"
-            android:elevation="?android:attr/actionBarSize"
-            tools:listitem="@layout/kitchen_order_item_detail"
-            app:layout_constraintTop_toBottomOf="@+id/recycler_cold_list"
-            app:layout_constraintBottom_toTopOf="@+id/recycler_overflow_list"
-            app:layout_constraintStart_toEndOf="@+id/title_frozen" android:layout_marginStart="52dp"
-            app:layout_constraintEnd_toEndOf="parent" android:layout_marginEnd="36dp"
-    >
-    </android.support.v7.widget.RecyclerView>
-    <android.support.v7.widget.RecyclerView
-            android:id="@+id/recycler_cold_list"
-            android:layout_width="600dp"
-            android:layout_height="wrap_content"
-            android:divider="?android:verticalDivider"
-            android:orientation="horizontal"
-            android:layout_alignParentBottom="true"
-            app:reverseLayout="true"
-            app:layoutManager="android.support.v7.widget.LinearLayoutManager"
-            android:scrollbars="horizontal"
-            android:clipToPadding="false"
-            android:clipChildren="false"
-            android:elevation="?android:attr/actionBarSize"
-            tools:listitem="@layout/kitchen_order_item_detail"
-            app:layout_constraintEnd_toEndOf="parent" android:layout_marginTop="3dp"
-            app:layout_constraintTop_toBottomOf="@+id/recycler_hot_list" android:layout_marginBottom="1dp"
-            app:layout_constraintBottom_toTopOf="@+id/recycler_frozen_list"
-            android:layout_marginEnd="28dp"
-            app:layout_constraintStart_toEndOf="@+id/title_cold" android:layout_marginStart="53dp"
-    />
-
-    <android.support.v7.widget.RecyclerView
-            android:id="@+id/recycler_overflow_list"
-            android:layout_width="600dp"
-            android:layout_height="wrap_content"
-            android:divider="?android:verticalDivider"
-            android:orientation="horizontal"
-            android:layout_alignParentBottom="true"
-            app:reverseLayout="true"
-            app:layoutManager="android.support.v7.widget.LinearLayoutManager"
-            android:scrollbars="horizontal"
-            android:clipToPadding="false"
-            android:clipChildren="false"
-            android:elevation="?android:attr/actionBarSize"
-            tools:listitem="@layout/kitchen_order_item_detail"
-            app:layout_constraintTop_toBottomOf="@+id/recycler_frozen_list"
-            app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintStart_toEndOf="@+id/title_overflow"
-            android:layout_marginStart="40dp" app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginEnd="35dp"/>
-    <TextView
-            android:text="@string/shelf_hot"
-            android:layout_width="24dp"
-            android:layout_height="20dp"
-            android:id="@+id/title_hot"
-            android:textSize="15sp"
-            android:textStyle="bold"
-            app:layout_constraintTop_toTopOf="@+id/count_hot_id"
-            app:layout_constraintStart_toStartOf="@+id/title_cold"
-            app:layout_constraintEnd_toEndOf="@+id/title_cold"
-            app:layout_constraintBottom_toBottomOf="@+id/count_hot_id"/>
-    <TextView
-            android:text="@string/shelf_cold"
-            android:layout_width="30dp"
-            android:layout_height="20dp"
-            android:id="@+id/title_cold"
-            android:textSize="15sp"
-            android:textStyle="bold"
-            app:layout_constraintTop_toBottomOf="@+id/title_hot"
-            app:layout_constraintBottom_toTopOf="@+id/title_frozen"
-            app:layout_constraintStart_toStartOf="@+id/title_frozen"
-            app:layout_constraintEnd_toEndOf="@+id/title_frozen"/>
-    <TextView
-            android:text="@string/shelf_frozen"
-            android:layout_width="46dp"
-            android:layout_height="20dp"
-            android:id="@+id/title_frozen"
-            android:textSize="15sp"
-            android:textStyle="bold"
-            app:layout_constraintTop_toBottomOf="@+id/title_cold"
-            app:layout_constraintBottom_toTopOf="@+id/title_overflow"
-            app:layout_constraintStart_toStartOf="@+id/title_overflow"
-            app:layout_constraintEnd_toEndOf="@+id/title_overflow"/>
-    <TextView
-            android:text="@string/shelf_overflow"
-            android:layout_width="60dp"
-            android:layout_height="20dp"
-            android:id="@+id/title_overflow"
-            android:textSize="15sp" android:textStyle="bold"
-            app:layout_constraintBottom_toBottomOf="@+id/recycler_overflow_list"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/count_overflow_id"
-            app:layout_constraintTop_toTopOf="@+id/recycler_overflow_list"/>
-    <android.support.constraint.Guideline
-            android:orientation="vertical"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" app:layout_constraintGuide_begin="96dp" android:id="@+id/guideline2"
-            app:layout_constraintStart_toStartOf="parent" app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintEnd_toStartOf="@+id/recycler_hot_list" app:layout_constraintBottom_toBottomOf="parent"
-            android:layout_marginBottom="411dp" app:layout_constraintTop_toTopOf="parent"/>
-    <TextView
-            android:text="0"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/count_overflow_id"
-            app:layout_constraintTop_toTopOf="@+id/title_overflow"
-            app:layout_constraintBottom_toBottomOf="@+id/title_overflow"
-            app:layout_constraintStart_toEndOf="@+id/title_overflow"
-            app:layout_constraintEnd_toStartOf="@+id/recycler_overflow_list"/>
-    <TextView
-            android:text="0"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/count_frozen_id"
-            app:layout_constraintTop_toTopOf="@+id/recycler_frozen_list"
-            app:layout_constraintBottom_toBottomOf="@+id/recycler_frozen_list"
-            app:layout_constraintStart_toEndOf="@+id/title_frozen"
-            app:layout_constraintEnd_toStartOf="@+id/recycler_frozen_list"/>
-    <TextView
-            android:text="0"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/count_cold_id"
-            app:layout_constraintTop_toTopOf="@+id/title_cold"
-            app:layout_constraintBottom_toBottomOf="@+id/title_cold"
-            app:layout_constraintStart_toEndOf="@+id/title_cold"
-            app:layout_constraintEnd_toStartOf="@+id/recycler_cold_list"
-    />
-    <TextView
-            android:text="0"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/count_hot_id"
-            app:layout_constraintStart_toEndOf="@+id/title_hot"
-            app:layout_constraintEnd_toStartOf="@+id/recycler_hot_list"
-            app:layout_constraintTop_toTopOf="@+id/recycler_hot_list"
-            app:layout_constraintBottom_toBottomOf="@+id/recycler_hot_list"/>
+            android:layout_marginStart="8dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
 
-</android.support.constraint.ConstraintLayout>
 
+            android:orientation="horizontal"
+            android:id="@+id/main_constraint_layout">
+        <!--U.I. busy spinner-->
+
+        <!--Recycler view for shelf detail-->
+        <android.support.v7.widget.RecyclerView
+                android:id="@+id/recycler_hot_list"
+                android:layout_width="600dp"
+                android:layout_height="wrap_content"
+                android:divider="?android:verticalDivider"
+                android:orientation="horizontal"
+                android:layout_alignParentBottom="true"
+                app:reverseLayout="true"
+                app:layoutManager="android.support.v7.widget.LinearLayoutManager"
+                android:scrollbars="horizontal"
+                android:clipToPadding="false"
+                android:clipChildren="false"
+                android:elevation="?android:attr/actionBarSize"
+                tools:listitem="@layout/kitchen_order_item_detail"
+                android:layout_marginBottom="3dp" app:layout_constraintBottom_toTopOf="@+id/recycler_cold_list"
+                app:layout_constraintVertical_bias="0.48000002" app:layout_constraintStart_toEndOf="@+id/guideline2"
+                android:layout_marginStart="4dp" android:layout_marginEnd="31dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" android:visibility="gone">
+        </android.support.v7.widget.RecyclerView>
+        <android.support.v7.widget.RecyclerView
+                android:id="@+id/recycler_frozen_list"
+                android:layout_width="600dp"
+                android:layout_height="wrap_content"
+                android:divider="?android:verticalDivider"
+                android:orientation="horizontal"
+                android:layout_alignParentBottom="true"
+                app:reverseLayout="true"
+                app:layoutManager="android.support.v7.widget.LinearLayoutManager"
+                android:scrollbars="horizontal"
+                android:clipToPadding="false"
+                android:clipChildren="false"
+                android:elevation="?android:attr/actionBarSize"
+                tools:listitem="@layout/kitchen_order_item_detail"
+                app:layout_constraintTop_toBottomOf="@+id/recycler_cold_list"
+                app:layout_constraintBottom_toTopOf="@+id/recycler_overflow_list"
+                app:layout_constraintStart_toEndOf="@+id/title_frozen" android:layout_marginStart="52dp"
+                app:layout_constraintEnd_toEndOf="parent" android:layout_marginEnd="36dp"
+                android:visibility="gone">
+        </android.support.v7.widget.RecyclerView>
+        <android.support.v7.widget.RecyclerView
+                android:id="@+id/recycler_cold_list"
+                android:layout_width="600dp"
+                android:layout_height="wrap_content"
+                android:divider="?android:verticalDivider"
+                android:orientation="horizontal"
+                android:layout_alignParentBottom="true"
+                app:reverseLayout="true"
+                app:layoutManager="android.support.v7.widget.LinearLayoutManager"
+                android:scrollbars="horizontal"
+                android:clipToPadding="false"
+                android:clipChildren="false"
+                android:elevation="?android:attr/actionBarSize"
+                tools:listitem="@layout/kitchen_order_item_detail"
+                app:layout_constraintEnd_toEndOf="parent" android:layout_marginTop="3dp"
+                app:layout_constraintTop_toBottomOf="@+id/recycler_hot_list" android:layout_marginBottom="1dp"
+                app:layout_constraintBottom_toTopOf="@+id/recycler_frozen_list"
+                android:layout_marginEnd="28dp"
+                app:layout_constraintStart_toEndOf="@+id/title_cold" android:layout_marginStart="53dp"
+                android:visibility="gone"/>
+
+        <android.support.v7.widget.RecyclerView
+                android:id="@+id/recycler_overflow_list"
+                android:layout_width="600dp"
+                android:layout_height="wrap_content"
+                android:divider="?android:verticalDivider"
+                android:orientation="horizontal"
+                android:layout_alignParentBottom="true"
+                app:reverseLayout="true"
+                app:layoutManager="android.support.v7.widget.LinearLayoutManager"
+                android:scrollbars="horizontal"
+                android:clipToPadding="false"
+                android:clipChildren="false"
+                android:elevation="?android:attr/actionBarSize"
+                tools:listitem="@layout/kitchen_order_item_detail"
+                app:layout_constraintTop_toBottomOf="@+id/recycler_frozen_list"
+                app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintStart_toEndOf="@+id/title_overflow"
+                android:layout_marginStart="40dp" app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginEnd="35dp" app:layout_constraintHorizontal_bias="0.954" android:visibility="gone"/>
+        <TextView
+                android:text="@string/shelf_hot"
+                android:layout_width="24dp"
+                android:layout_height="20dp"
+                android:id="@+id/title_hot"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                app:layout_constraintTop_toTopOf="@+id/count_hot_id"
+                app:layout_constraintStart_toStartOf="@+id/title_cold"
+                app:layout_constraintEnd_toEndOf="@+id/title_cold"
+                app:layout_constraintBottom_toBottomOf="@+id/count_hot_id" android:visibility="gone"/>
+        <TextView
+                android:text="@string/shelf_cold"
+                android:layout_width="30dp"
+                android:layout_height="20dp"
+                android:id="@+id/title_cold"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                app:layout_constraintTop_toBottomOf="@+id/title_hot"
+                app:layout_constraintBottom_toTopOf="@+id/title_frozen"
+                app:layout_constraintStart_toStartOf="@+id/title_frozen"
+                app:layout_constraintEnd_toEndOf="@+id/title_frozen" android:visibility="gone"/>
+        <TextView
+                android:text="@string/shelf_frozen"
+                android:layout_width="46dp"
+                android:layout_height="20dp"
+                android:id="@+id/title_frozen"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                app:layout_constraintTop_toBottomOf="@+id/title_cold"
+                app:layout_constraintBottom_toTopOf="@+id/title_overflow"
+                app:layout_constraintStart_toStartOf="@+id/title_overflow"
+                app:layout_constraintEnd_toEndOf="@+id/title_overflow" android:visibility="gone"/>
+        <TextView
+                android:text="@string/shelf_overflow"
+                android:layout_width="60dp"
+                android:layout_height="20dp"
+                android:id="@+id/title_overflow"
+                android:textSize="15sp" android:textStyle="bold"
+                app:layout_constraintBottom_toBottomOf="@+id/recycler_overflow_list"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/count_overflow_id"
+                app:layout_constraintTop_toTopOf="@+id/recycler_overflow_list" android:visibility="gone"/>
+        <android.support.constraint.Guideline
+                android:orientation="vertical"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" app:layout_constraintGuide_begin="96dp"
+                android:id="@+id/guideline2"
+                app:layout_constraintStart_toStartOf="parent" app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintEnd_toStartOf="@+id/recycler_hot_list"
+                app:layout_constraintBottom_toBottomOf="parent"
+                android:layout_marginBottom="411dp" app:layout_constraintTop_toTopOf="parent"/>
+        <TextView
+                android:text="0"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/count_overflow_id"
+                app:layout_constraintTop_toTopOf="@+id/title_overflow"
+                app:layout_constraintBottom_toBottomOf="@+id/title_overflow"
+                app:layout_constraintStart_toEndOf="@+id/title_overflow"
+                app:layout_constraintEnd_toStartOf="@+id/recycler_overflow_list" android:visibility="gone"/>
+        <TextView
+                android:text="0"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/count_frozen_id"
+                app:layout_constraintTop_toTopOf="@+id/recycler_frozen_list"
+                app:layout_constraintBottom_toBottomOf="@+id/recycler_frozen_list"
+                app:layout_constraintStart_toEndOf="@+id/title_frozen"
+                app:layout_constraintEnd_toStartOf="@+id/recycler_frozen_list" android:visibility="gone"/>
+        <TextView
+                android:text="0"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/count_cold_id"
+                app:layout_constraintTop_toTopOf="@+id/title_cold"
+                app:layout_constraintBottom_toBottomOf="@+id/title_cold"
+                app:layout_constraintStart_toEndOf="@+id/title_cold"
+                app:layout_constraintEnd_toStartOf="@+id/recycler_cold_list"
+                android:visibility="gone"/>
+        <TextView
+                android:text="0"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/count_hot_id"
+                app:layout_constraintStart_toEndOf="@+id/title_hot"
+                app:layout_constraintEnd_toStartOf="@+id/recycler_hot_list"
+                app:layout_constraintTop_toTopOf="@+id/recycler_hot_list"
+                app:layout_constraintBottom_toBottomOf="@+id/recycler_hot_list" android:visibility="gone"/>
+
+    </android.support.constraint.ConstraintLayout>
+
+</ScrollView>
