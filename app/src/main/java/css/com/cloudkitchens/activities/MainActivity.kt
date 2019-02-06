@@ -11,23 +11,25 @@ import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.view.Menu
 import android.view.MenuItem
-import android.widget.TextView
-import css.com.cloudkitchens.R
 import css.com.cloudkitchens.adapters.RecyclerViewAdapter
+import css.com.cloudkitchens.dataproviders.KitchenOrderShelfStatus
 import css.com.cloudkitchens.interfaces.RecyclerViewAdapterInterface
 import css.com.cloudkitchens.managers.ShelfManager
 import css.com.cloudkitchens.services.FoodOrderService
 import css.com.cloudkitchens.utilities.printLog
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.observers.DisposableObserver
+import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_main_view.*
-import kotlinx.coroutines.*
 
 /**
  * The one and only main activity. The activity consists of three recycler views with their respective detail items
  * A shelf is modeled by a recycler view
  */
 class MainActivity : AppCompatActivity(), ServiceConnection {
-    private val jobList = mutableListOf<Job>()
+    private val disposables = CompositeDisposable()
     private var kitchenService: FoodOrderService? = null
     private var shelfManager: ShelfManager? = null
     private lateinit var recyclerViewHot: RecyclerView
@@ -62,107 +64,74 @@ class MainActivity : AppCompatActivity(), ServiceConnection {
             LinearLayoutManager(applicationContext, LinearLayoutManager.HORIZONTAL, false)
 
     }
-    private fun startAllChannelMonitorJobs(){
-        monitorOrderArrival()
-        monitorShelfItemAging()
-    }
+
     /**
-     * The method listens for order arrival emitted by the [ShelfManager]. It them updates the appropriate recycler view
+     * The method listens for order arival emitted by the [ShelfManager]. It them updates the appropriate recycler view
      */
-    private fun monitorShelfItemAging(){
-        shelfManager?.let {manager->
-            jobList.add(GlobalScope.launch(Dispatchers.Main) {
-                while (isActive){
-                    val itemList = manager.getOrderAgeUpdateChannel().receive()
-                    when(itemList[0].temp){
-                        "hot" -> {
-                            val adapter: RecyclerViewAdapterInterface =
-                                recyclerViewHot.adapter as RecyclerViewAdapterInterface
-                            adapter.update(itemList)
+    private fun monitorOrderArival() {
+        shelfManager?.getKitchenOrdersStatus()?.let { orderStatus ->
+            disposables.add(
+                orderStatus.subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribeWith(object : DisposableObserver<KitchenOrderShelfStatus>() {
+                        override fun onComplete() {
+                            //Do nothing
                         }
 
-                        "cold" -> {
-                            val adapter: RecyclerViewAdapterInterface =
-                                recyclerViewCold.adapter as RecyclerViewAdapterInterface
-                            adapter.update(itemList)
-                        }
-                        "frozen" -> {
-                            val adapter: RecyclerViewAdapterInterface =
-                                recyclerViewFrozen.adapter as RecyclerViewAdapterInterface
-                            adapter.update(itemList)
-                        }
-                        "overflow" ->{
-                            val adapter: RecyclerViewAdapterInterface =
-                                recyclerViewOverFlow.adapter as RecyclerViewAdapterInterface
-                            adapter.update(itemList)
-                        }
-                    }
-                }
-            })
-        }
-    }
-    private fun monitorOrderArrival() {
-        shelfManager?.let { shelfManager ->
-            jobList.add(GlobalScope.launch(Dispatchers.Main) {
-                while (isActive) {
-                    val orders = shelfManager.getOrderArrivalChannel().receive()
-                    when (orders.orderSelector) {
-                        "hot" -> {
-                            val adapter: RecyclerViewAdapterInterface =
-                                recyclerViewHot.adapter as RecyclerViewAdapterInterface
-                            adapter.update(orders.shelfStatus)
-                            findViewById<TextView>(R.id.count_hot_id)?.let { count->
-                                count.text = orders.shelfStatus.size.toString()
+                        override fun onNext(orders: KitchenOrderShelfStatus) {
+                            when (orders.orderSelector) {
+                                "hot" -> {
+                                    val adapter: RecyclerViewAdapterInterface =
+                                        recyclerViewHot.adapter as RecyclerViewAdapterInterface
+                                    adapter.update(orders.shelfStatus)
+                                }
+
+                                "cold" -> {
+                                    val adapter: RecyclerViewAdapterInterface =
+                                        recyclerViewCold.adapter as RecyclerViewAdapterInterface
+                                    adapter.update(orders.shelfStatus)
+                                }
+                                "frozen" -> {
+                                    val adapter: RecyclerViewAdapterInterface =
+                                        recyclerViewFrozen.adapter as RecyclerViewAdapterInterface
+                                    adapter.update(orders.shelfStatus)
+                                }
+                                else -> printLog("unknown temperature: ${orders.orderSelector}")
+                            }
+                            if (orders.overFlow.isNotEmpty()) {
+                                val adapter: RecyclerViewAdapterInterface =
+                                    recyclerViewOverFlow.adapter as RecyclerViewAdapterInterface
+                                adapter.update(orders.shelfStatus)
                             }
                         }
 
-                        "cold" -> {
-                            val adapter: RecyclerViewAdapterInterface =
-                                recyclerViewCold.adapter as RecyclerViewAdapterInterface
-                            adapter.update(orders.shelfStatus)
-                            findViewById<TextView>(R.id.count_cold_id)?.let {count->
-                                count.text = orders.shelfStatus.size.toString()
-                            }
+                        override fun onError(e: Throwable) {
+                            printLog(e.toString())
                         }
-                        "frozen" -> {
-                            val adapter: RecyclerViewAdapterInterface =
-                                recyclerViewFrozen.adapter as RecyclerViewAdapterInterface
-                            adapter.update(orders.shelfStatus)
-                            findViewById<TextView>(R.id.count_frozen_id)?.let {count->
-                                count.text = orders.shelfStatus.size.toString()
-                            }
-                        }
-                        else -> printLog("unknown temperature: ${orders.orderSelector}")
-                    }
-                    if (orders.overFlow.isNotEmpty()) {
-                        val adapter: RecyclerViewAdapterInterface =
-                            recyclerViewOverFlow.adapter as RecyclerViewAdapterInterface
-                        adapter.update(orders.overFlow)
-                        findViewById<TextView>(R.id.count_overflow_id)?.let { count->
-                            count.text = orders.overFlow.size.toString()
-                        }
-                    }
-                }
-            })
+                    })
+            )
         }
 
     }
 
     override fun onServiceDisconnected(name: ComponentName?) {
-        jobList.forEach { it.cancel() }
-        shelfManager?.cleanup()
+        disposables.clear()
     }
 
     /**
      * This method is called after we connect to the service.
-     * Once connected, we obtain a service reference so that we can communicate with it
+     * Once connected, we obtain a service refererence so that we can communicate with it
      * */
-    override fun onServiceConnected(name: ComponentName?, dispatchSerivice: IBinder?) {
-        val serviceBinder = dispatchSerivice as FoodOrderService.OrderSourceBinder
+    override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+        val serviceBinder = service as FoodOrderService.OrderSourceBinder
         kitchenService = serviceBinder.getService()
-        kitchenService?.let { service ->
-            shelfManager = ShelfManager(service)
-            startAllChannelMonitorJobs()
+        kitchenService?.let { theService ->
+            shelfManager = ShelfManager(theService)
+            shelfManager?.run {
+                disposables.add(initiateOrderAging())
+                disposables.add(initiateDeliveries())
+            }
+            monitorOrderArival()
         }
     }
 
@@ -173,8 +142,7 @@ class MainActivity : AppCompatActivity(), ServiceConnection {
         super.onResume()
         val intent = Intent(this, FoodOrderService::class.java)
         bindService(intent, this, Context.BIND_AUTO_CREATE)
-        jobList.forEach { it.cancel() }
-        startAllChannelMonitorJobs()
+        monitorOrderArival()
     }
 
     /**
@@ -182,8 +150,7 @@ class MainActivity : AppCompatActivity(), ServiceConnection {
      */
     override fun onPause() {
         super.onPause()
-        shelfManager?.cleanup()
-        jobList.forEach { it.cancel() }
+        disposables.clear()
         unbindService(this)
     }
 

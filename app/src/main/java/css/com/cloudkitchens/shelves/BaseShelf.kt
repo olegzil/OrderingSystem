@@ -4,8 +4,9 @@ import css.com.cloudkitchens.dataproviders.KitchenOrderDetail
 import css.com.cloudkitchens.interfaces.ShelfInterface
 import css.com.cloudkitchens.interfaces.ShelfOrderInterface
 
-abstract class BaseShelf(private var decayRateMultiplier:Double=1.0) : ShelfInterface {
-    private class ShelfOrder(private var orderDetail: KitchenOrderDetail, private var decayRateMultiplier:Double) : ShelfOrderInterface {
+abstract class BaseShelf : ShelfInterface {
+    private class ShelfOrder(private var orderDetail: KitchenOrderDetail) : ShelfOrderInterface {
+        private var decayRateMultiplier=1.0
         var orderAge = 0L
         override fun getDecayRate() = decayRateMultiplier
 
@@ -81,7 +82,7 @@ abstract class BaseShelf(private var decayRateMultiplier:Double=1.0) : ShelfInte
 
     @Synchronized
     override fun addOrder(orderDetail: KitchenOrderDetail) {
-        orderList[orderDetail.id] = ShelfOrder(orderDetail, decayRateMultiplier)
+        orderList[orderDetail.id] = ShelfOrder(orderDetail)
     }
 
     @Synchronized
@@ -115,10 +116,3 @@ abstract class BaseShelf(private var decayRateMultiplier:Double=1.0) : ShelfInte
         }
     }
 }
-
-/**
-cp  /home/oleg/Projects/CSS/app/src/main/java/css/com/cloudkitchens/managers/ShelfManager.kt /home/oleg/Projects/OrderingSystem/app/src/main/java/css/com/cloudkitchens/managers/ShelfManager.kt
-cp  /home/oleg/Projects/CSS/app/src/main/java/css/com/cloudkitchens/shelves/BaseShelf.kt /home/oleg/Projects/app/src/main/java/css/com/cloudkitchens/shelves/BaseShelf.kt
-cp  /home/oleg/Projects/CSS/app/src/main/java/css/com/cloudkitchens/shelves/ShelfOverflow.kt /home/oleg/Projects/app/src/main/java/css/com/cloudkitchens/shelves/ShelfOverflow.kt
-
- */

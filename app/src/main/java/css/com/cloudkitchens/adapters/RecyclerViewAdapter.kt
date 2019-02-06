@@ -20,6 +20,7 @@ class RecyclerViewAdapter : RecyclerViewAdapterInterface, RecyclerView.Adapter<R
             val decayRate = itemView.findViewById<TextView>(R.id.order_decay_rate)
             val normalizedLife = itemView.findViewById<TextView>(R.id.order_normalized_life)
             val remainingLife = itemView.findViewById<TextView>(R.id.order_life_remaining)
+
             name.text = itemDetail.name
             temp.text = itemDetail.temp
             maxLife.text = itemDetail.shelfLife.toString()
@@ -57,15 +58,6 @@ class RecyclerViewAdapter : RecyclerViewAdapterInterface, RecyclerView.Adapter<R
             itemList.remove(it)
         }
         notifyDataSetChanged()
-    }
-
-    override fun updateSingleOrder(order:KitchenOrderDetail){
-        var index=0
-        itemList.first { order.id == it.id }.let {targetOrder->
-            itemList[index] = order
-            ++index
-            notifyItemChanged(index)
-        }
     }
 
     override fun update(newItems: List<KitchenOrderDetail>) {

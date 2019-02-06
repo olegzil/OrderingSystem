@@ -9,14 +9,16 @@ import css.com.cloudkitchens.constants.Constants.POISSON_LAMBDA
 import css.com.cloudkitchens.dataproviders.KitchenOrderServerDetail
 import css.com.cloudkitchens.interfaces.KitchenOrderNotification
 import css.com.cloudkitchens.utilities.printLog
+import io.reactivex.Observable
+import io.reactivex.subjects.PublishSubject
 import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.Channel
 import org.json.JSONArray
 import java.io.InputStream
 import java.lang.Math.random
 import java.nio.charset.Charset
 import java.util.*
 import java.util.concurrent.ThreadLocalRandom
+import java.util.concurrent.TimeUnit
 
 /**
  * Service emulates a server. The service reads JSON data from a resource file in this APK, parser the the data and
@@ -25,18 +27,21 @@ import java.util.concurrent.ThreadLocalRandom
 class FoodOrderService : Service(), KitchenOrderNotification {
     private var kitchenOrders: JSONArray? = null
     private val binder = OrderSourceBinder()
-    private var driverArrivalChannel = Channel<String>(Channel.RENDEZVOUS)
-    private var orderNotificationChannel = Channel<KitchenOrderServerDetail>(Channel.RENDEZVOUS)
-    private val heatBeatChannel= Channel<Long>(Channel.RENDEZVOUS)
+    private var orderNotification: PublishSubject<KitchenOrderServerDetail>? = null
+    private var driverArivalNotification = PublishSubject.create<String>()
     private var continueRunning = true
+    private var request: Job? = null
     private var debugTime = 0L
     private var sampleCount = 1.0
     private var accumulatedTime = 0.0
-    private val jobList = mutableListOf<Job>()
+    private lateinit var coroutineOrderCancelation: Job
+    private lateinit var coroutineDriverCancelation: Job
 
     init {
         if (kitchenOrders == null)
             kitchenOrders = readKitchenOrders("orders.json")
+        if (orderNotification == null)
+            orderNotification = PublishSubject.create()
         coroutineRestart()
     }
 
@@ -47,31 +52,23 @@ class FoodOrderService : Service(), KitchenOrderNotification {
     }
 
     private fun coroutineRestart() {
-        jobList.forEach { it.cancel() }
-        jobList.add(GlobalScope.launch {
-            while(isActive) {
-                delay(AGING_HEART_BEAT)
-                heatBeatChannel.offer(AGING_HEART_BEAT)
-            }
-        })
-
-        jobList.add(GlobalScope.launch {
+        coroutineOrderCancelation = GlobalScope.launch {
             while (isActive) {
-                delay(orderGenerator())
-            }
-        })
-
-        jobList.add(GlobalScope.launch {
-            while (isActive) {
-                debugTime = System.currentTimeMillis()
-                val timeOfDirverAriaval = ThreadLocalRandom.current().nextInt(2, 9).toLong()
-                printLog("time before next driver arrival: $timeOfDirverAriaval")
-                delay(timeOfDirverAriaval * 1000)
-                getKitchenOrder()?.let {
-                    driverArrivalChannel.offer(it.temp)
+                val asyncResult = async {
+                    delay(orderGenerator())
                 }
+                asyncResult.await()
             }
-        })
+        }
+
+        coroutineDriverCancelation = GlobalScope.launch {
+            while (isActive) {
+                val asyncResult = async {
+                    delay(driverGenerator())
+                }
+                asyncResult.await()
+            }
+        }
     }
 
     /**
@@ -128,6 +125,8 @@ class FoodOrderService : Service(), KitchenOrderNotification {
     override fun onRebind(intent: Intent?) {
         continueRunning = true
         printLog("from Service.onBind")
+        coroutineOrderCancelation.cancel()
+        coroutineDriverCancelation.cancel()
         coroutineRestart()
         super.onRebind(intent)
     }
@@ -139,7 +138,9 @@ class FoodOrderService : Service(), KitchenOrderNotification {
 
     override fun onUnbind(intent: Intent?): Boolean {
         continueRunning = false
-        jobList.forEach { it.cancel() }
+        coroutineOrderCancelation.cancel()
+        coroutineDriverCancelation.cancel()
+        request?.cancel()
         stopSelf()
         return super.onUnbind(intent)
     }
@@ -148,13 +149,33 @@ class FoodOrderService : Service(), KitchenOrderNotification {
         continueRunning = true
         printLog("from Service.onBind")
         kitchenOrders = readKitchenOrders("orders.json")
+        coroutineOrderCancelation.cancel()
+        coroutineDriverCancelation.cancel()
         coroutineRestart()
         return binder
     }
 
-    override fun getOrderNotificationChannel() = orderNotificationChannel
-    override fun getDriverNotification() = driverArrivalChannel
-    override fun getOrderHeartbeat() = heatBeatChannel
+    override fun getOrderNotificationChannel() = orderNotification
+    override fun getDriverNotification() = driverArivalNotification
+
+    override fun getOrderHeartbeat(): Observable<Long> {
+        return Observable.interval(AGING_HEART_BEAT, TimeUnit.MILLISECONDS)
+    }
+
+    /**
+     * Generate a random value between 2 and 8. Sleep for that many milliseconds
+     * Once awaken, notify the listener of a random order pickup
+     */
+    private fun driverGenerator(): Long {
+        debugTime = System.currentTimeMillis()
+        val timeOfDirverAriaval = ThreadLocalRandom.current().nextInt(2, 9).toLong()
+        printLog("time before next driver arrival: $timeOfDirverAriaval")
+        getKitchenOrder()?.let {
+            driverArivalNotification.onNext(it.temp)
+
+        }
+        return timeOfDirverAriaval * 1000
+    }
 
     /**
      * This method generates random kitchen orders.
@@ -170,7 +191,9 @@ class FoodOrderService : Service(), KitchenOrderNotification {
         getKitchenOrder()?.let {
             accumulatedTime += sleepTime
             sampleCount += 1
-            orderNotificationChannel.offer(it)
+            orderNotification?.run {
+                onNext(it)
+            }
         }
         return sleepTime.toLong() * 1000
     }
